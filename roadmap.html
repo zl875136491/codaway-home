@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codaway · 应用版本特性与发展路线图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="glow-bg"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <div class="brand-logo">C</div>
+        <span class="brand-name">Codaway</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">核心特性</a>
+        <a href="/roadmap" class="nav-link active">版本路线</a>
+        <a href="/register" class="nav-link">用户注册</a>
+      </nav>
+      <div>
+        <a href="/register" class="btn-nav">立即注册</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Roadmap Section -->
+  <main class="container">
+    <div class="roadmap-page-wrapper">
+      <div class="section-title-wrap" style="margin-top: 20px;">
+        <div class="section-eyebrow">Versions & Evolution</div>
+        <h1 class="section-title">应用版本特性与发展路线图</h1>
+        <p class="section-desc">全栈三端协同演进，持续拓展自主智能终端的技术边界。</p>
+      </div>
+
+      <!-- Version Cards Grid -->
+      <div class="version-cards">
+        <div class="version-card">
+          <div class="version-header">
+            <span class="version-title">Pocket (iOS)</span>
+            <span class="version-tag">v0.3.0</span>
+          </div>
+          <ul class="feature-list">
+            <li>灵动岛与锁屏实时活动（Live Activity）全生命周期监控</li>
+            <li>原生双向低延迟 PTY 终端流与 ANSI 色彩实时渲染</li>
+            <li>工作区 Git 状态与单列 / 双列并排横屏代码差异比对器</li>
+            <li>Codex、Claude Code、OpenCode、DeepSeek 全指令面板</li>
+            <li>FaceID / TouchID 本地快速解锁与 iOS Keychain 凭据守护</li>
+          </ul>
+        </div>
+
+        <div class="version-card">
+          <div class="version-header">
+            <span class="version-title">Worker (Mac/Linux)</span>
+            <span class="version-tag">v0.2.0</span>
+          </div>
+          <ul class="feature-list">
+            <li>零对外开放端口的后台守护服务常驻运行 (Launchd / Systemd)</li>
+            <li>跨平台伪终端进程级会话驱动与优雅信号拦截中断 (SIGINT)</li>
+            <li>多工作区并发全文索引与智能代码摘要提取生成</li>
+            <li>macOS Apple Silicon 架构签名自愈与无缝二进制替换机制</li>
+            <li>终端二维码与 4 分钟限时安全端到端配对短码分发</li>
+          </ul>
+        </div>
+
+        <div class="version-card">
+          <div class="version-header">
+            <span class="version-title">Pipe (Relay)</span>
+            <span class="version-tag">v0.3.0</span>
+          </div>
+          <ul class="feature-list">
+            <li>高性能 Go WebSocket 密文帧实时路由分发（零明文盲转）</li>
+            <li>企业级 SMTP 邮箱激活认证与动态 6 位验证码生成分发</li>
+            <li>防邮件轰炸的源 IP 与目标邮箱滑动窗口双重限流保护</li>
+            <li>MongoDB 会话状态、公钥指纹与操作审计日志持久化</li>
+            <li>离线消息缓冲队列与断网自动重发机制</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Section Title for Timeline -->
+      <div class="section-title-wrap" style="margin-top: 60px;">
+        <div class="section-eyebrow">Milestones</div>
+        <h2 class="section-title">产品演进阶段规划</h2>
+        <p class="section-desc">从基础点对点安全管道，逐步迈向多工作站集群与多 Agent 协同治理网络。</p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline">
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Phase 1: 核心端到端加密与中继网络</span>
+              <span class="timeline-status status-done">已完成</span>
+            </div>
+            <p class="timeline-desc">制定 CPS v1 密文规范，实现 Curve25519 密钥协商与 ChaCha20-Poly1305 密文流中继，完成首代 Pocket 与 Worker 手机-电脑无缝连通。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Phase 2: Pocket 深度原生体验与多驱动协同</span>
+              <span class="timeline-status status-done">已完成</span>
+            </div>
+            <p class="timeline-desc">上线 iOS 灵动岛进度感知、双列横屏 Git 比对窗口、全驱动操作指令快捷板及 FaceID 生物认证安全锁。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item in-progress">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Phase 3: 团队多节点 Mesh 与 Web 独立控制台</span>
+              <span class="timeline-status status-prog">进行中</span>
+            </div>
+            <p class="timeline-desc">交付独立 Vercel 风格产品主页与注册中枢，支持多工作站集群管理、企业 SMTP 动态验证码及 Cloudflare Tunnel 快速分发。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item planned">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Phase 4: 多 Agent 自治任务编排与协同治理</span>
+              <span class="timeline-status status-plan">规划中</span>
+            </div>
+            <p class="timeline-desc">支持多个 AI Agent 跨工作区协同工作，引入审批流断点、自动化单元测试拦截与代码审查评分报告机制。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item planned">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Phase 5: 全双工移动语音交互与端侧大模型推理</span>
+              <span class="timeline-status status-plan">规划中</span>
+            </div>
+            <p class="timeline-desc">集成低延迟移动端语音双工流，探索在 Apple Silicon 上本地运行小型辅助模型，实现离线意图识别与语音快捷转写。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <section class="cta-banner">
+        <h2>即刻加入 Codaway 早期体验</h2>
+        <p>体验在手机上优雅管理你的桌面 AI 编程 Agent。</p>
+        <a href="/register" class="btn-primary">
+          <span>立即注册体验</span>
+          <span>→</span>
+        </a>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2026 Codaway Project · All Rights Reserved · End-to-End Encrypted Developer Console</p>
+    </div>
+  </footer>
+
+  <script src="router.js"></script>
+</body>
+</html>
