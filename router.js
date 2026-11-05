@@ -1,4 +1,4 @@
-// Ultra-lightweight, zero-runtime client-side router for instant page transitions
+// Lightweight SPA router + shared chrome (mobile nav)
 (function () {
   const routes = {
     '/': 'index.html',
@@ -12,16 +12,43 @@
 
   const pageCache = new Map();
 
+  function closeMobileNav() {
+    const panel = document.getElementById('mobileNav');
+    const toggle = document.getElementById('navToggle');
+    if (panel) {
+      panel.classList.remove('open');
+      panel.hidden = true;
+    }
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', '打开菜单');
+    }
+  }
+
+  function bindMobileNav() {
+    const toggle = document.getElementById('navToggle');
+    const panel = document.getElementById('mobileNav');
+    if (!toggle || !panel || toggle.dataset.bound === '1') return;
+    toggle.dataset.bound = '1';
+    toggle.addEventListener('click', () => {
+      const open = panel.classList.toggle('open');
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+    });
+  }
+
   function updateNavActive(path) {
     const norm = path.replace(/\/$/, '') || '/';
     document.querySelectorAll('.nav-link').forEach(link => {
-      const href = link.getAttribute('href');
+      const href = link.getAttribute('href') || '';
       const linkNorm = href.replace(/\/$/, '') || '/';
-      if (linkNorm === norm || (norm === '/' && linkNorm === '/index.html') || (norm === '/register' && linkNorm === '/register.html') || (norm === '/roadmap' && linkNorm === '/roadmap.html')) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
+      const match =
+        linkNorm === norm ||
+        (norm === '/' && (linkNorm === '/' || linkNorm === '/index.html')) ||
+        (norm === '/register' && (linkNorm === '/register' || linkNorm === '/register.html')) ||
+        (norm === '/roadmap' && (linkNorm === '/roadmap' || linkNorm === '/roadmap.html'));
+      link.classList.toggle('active', match);
     });
   }
 
@@ -49,19 +76,25 @@
           curMain.innerHTML = newMain.innerHTML;
           curMain.className = newMain.className;
         }
+
+        // Refresh header CTA / active state from fetched page when present
+        const newHeader = doc.querySelector('header');
+        const curHeader = document.querySelector('header');
+        if (newHeader && curHeader) {
+          curHeader.innerHTML = newHeader.innerHTML;
+        }
+
         document.title = doc.title;
         updateNavActive(path);
+        closeMobileNav();
+        bindMobileNav();
         window.scrollTo(0, 0);
 
-        // Execute scripts in the newly loaded page
         doc.querySelectorAll('script').forEach(s => {
           if (s.src && s.src.includes('router.js')) return;
           const newScript = document.createElement('script');
-          if (s.src) {
-            newScript.src = s.src;
-          } else {
-            newScript.textContent = s.textContent;
-          }
+          if (s.src) newScript.src = s.src;
+          else newScript.textContent = s.textContent;
           document.body.appendChild(newScript);
         });
       };
@@ -72,16 +105,12 @@
         applyContent();
       }
 
-      if (push) {
-        window.history.pushState({ path }, '', url);
-      }
+      if (push) window.history.pushState({ path }, '', url);
     } catch (e) {
-      // Fallback to native navigation if fetch fails
       window.location.href = url;
     }
   }
 
-  // Intercept local link clicks
   document.addEventListener('click', e => {
     const a = e.target.closest('a');
     if (!a) return;
@@ -90,6 +119,7 @@
       return;
     }
     e.preventDefault();
+    closeMobileNav();
     loadPage(href, true);
   });
 
@@ -97,7 +127,8 @@
     loadPage(window.location.pathname, false);
   });
 
-  // Pre-cache other pages on idle for instant sub-millisecond clicks
+  bindMobileNav();
+
   if ('requestIdleCallback' in window) {
     window.requestIdleCallback(() => {
       ['register.html', 'roadmap.html', 'index.html'].forEach(f => {

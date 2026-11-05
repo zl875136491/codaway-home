@@ -3,578 +3,375 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Codaway · 移动时代的自主 AI 终端控制台 (核心特性)</title>
+  <title>Codaway · 移动端 AI 编程控制台</title>
+  <meta name="description" content="在 iPhone 上安全操控桌面 AI Agent。端到端加密，零公网端口，原生终端体验。">
+  <meta name="theme-color" content="#050505">
+  <meta property="og:title" content="Codaway · 移动端 AI 编程控制台">
+  <meta property="og:description" content="在 iPhone 上安全操控桌面 AI Agent。端到端加密，零公网端口，原生终端体验。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23fff'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='18' fill='%23000'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="glow-bg"></div>
+  <a href="#main" class="skip-link">跳到主要内容</a>
+  <div class="glow-bg" aria-hidden="true"></div>
 
-  <!-- Header -->
   <header>
     <div class="nav-container">
-      <a href="/" class="brand">
-        <div class="brand-logo">C</div>
+      <a href="/" class="brand" aria-label="Codaway 首页">
+        <div class="brand-logo" aria-hidden="true">C</div>
         <span class="brand-name">Codaway</span>
       </a>
-      <nav class="nav-links">
+      <nav class="nav-links" aria-label="主导航">
         <a href="/" class="nav-link active">核心特性</a>
         <a href="/roadmap" class="nav-link">版本路线</a>
         <a href="/register" class="nav-link">用户注册</a>
       </nav>
-      <div>
+      <div class="nav-actions">
         <a href="/register" class="btn-nav">立即注册</a>
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false" aria-controls="mobileNav">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round"/></svg>
+        </button>
       </div>
     </div>
+    <div class="mobile-nav-panel" id="mobileNav" hidden>
+      <nav aria-label="移动导航">
+        <a href="/" class="nav-link active">核心特性</a>
+        <a href="/roadmap" class="nav-link">版本路线</a>
+        <a href="/register" class="nav-link">用户注册</a>
+      </nav>
+      <a href="/register" class="btn-nav mobile-nav-cta">立即注册</a>
+    </div>
   </header>
-
-  <!-- Main Showcase -->
-  <main class="container">
+  <main class="container" id="main">
     <section class="hero">
       <div class="pill-badge">
-        <span class="pill-dot"></span>
-        <span>Codaway v0.3.0 正式上线 · CPS v1 协议发布</span>
+        <span class="pill-dot" aria-hidden="true"></span>
+        <span>v0.3.0 · CPS-v1 端到端加密已上线</span>
       </div>
-      <h1 class="hero-title">移动时代的自主 AI 终端控制台</h1>
+      <h1 class="hero-title">手机上的 AI 编程控制台</h1>
       <p class="hero-subtitle">
-        零入网端口暴露 · CPS v1 端到端加密 · 跨多 Agent 驱动统一编排 · 原生 PTY 双向实时终端流
+        在 iPhone 上安全操控桌面 AI Agent。端到端加密，零公网端口，原生终端与 Git 巡检一体。
       </p>
       <div class="hero-actions">
         <a href="/register" class="btn-primary">
           <span>免费创建账号</span>
-          <span>→</span>
+          <span class="btn-arrow" aria-hidden="true">→</span>
         </a>
-        <a href="/roadmap" class="btn-secondary">查看版本路线图</a>
+        <a href="/roadmap" class="btn-secondary">查看版本路线</a>
       </div>
 
-      <!-- iPhone 16 Pro Interactive Showcase -->
       <div class="showcase-wrapper">
-        <!-- Interactive Scene Tabs -->
-        <div class="scene-switcher" id="sceneSwitcher">
-          <button class="scene-tab active" data-scene="chat">
-            <span class="tab-icon">💬</span>
-            <span>智能编程会话</span>
-          </button>
-          <button class="scene-tab" data-scene="stepper">
-            <span class="tab-icon">⚡️</span>
-            <span>实时任务与思考</span>
-          </button>
-          <button class="scene-tab" data-scene="git">
-            <span class="tab-icon">🌿</span>
-            <span>工作区 Git 巡检</span>
-          </button>
-          <button class="scene-tab" data-scene="hub">
-            <span class="tab-icon">🗂️</span>
-            <span>多端会话中枢</span>
-          </button>
-          <button class="scene-tab" data-scene="modal">
-            <span class="tab-icon">🪄</span>
-            <span>新建 Agent 会话</span>
-          </button>
+        <div class="scene-switcher" id="sceneSwitcher" role="tablist" aria-label="产品演示场景">
+          <button type="button" class="scene-tab active" role="tab" aria-selected="true" data-scene="chat">智能会话</button>
+          <button type="button" class="scene-tab" role="tab" aria-selected="false" data-scene="stepper">实时任务</button>
+          <button type="button" class="scene-tab" role="tab" aria-selected="false" data-scene="git">Git 巡检</button>
+          <button type="button" class="scene-tab" role="tab" aria-selected="false" data-scene="hub">会话中枢</button>
+          <button type="button" class="scene-tab" role="tab" aria-selected="false" data-scene="modal">新建会话</button>
         </div>
 
-        <!-- 3-Column Interactive Showcase Layout -->
         <div class="showcase-grid-layout">
-          <!-- Left Column Callouts -->
           <div class="callout-column">
             <div class="callout-card">
-              <div class="callout-badge">🔐 CPS v1 PROTOCOL</div>
-              <div class="callout-title">端到端无条件密文网络</div>
-              <div class="callout-desc">基于 Curve25519 密钥协商与 ChaCha20-Poly1305 密文封包。云端中继零知识转发，明文代码与凭据永不出局域网。</div>
+              <div class="callout-badge">CPS-v1</div>
+              <div class="callout-title">端到端密文通道</div>
+              <div class="callout-desc">Curve25519 密钥协商与 ChaCha20-Poly1305 封包。云端中继零知识转发，明文代码与凭据不出局域网。</div>
             </div>
             <div class="callout-card">
-              <div class="callout-badge">⚡️ PTY MULTIPLEXER</div>
+              <div class="callout-badge">PTY</div>
               <div class="callout-title">原生伪终端双向流</div>
-              <div class="callout-desc">集成完整 ANSI 颜色、Raw/PTY 渲染与双向终端流。支持终端按需回放，户外网络闪断毫秒级自动重连断点续传。</div>
+              <div class="callout-desc">完整 ANSI 渲染与双向终端流。网络闪断自动重连，断点续传，户外排障也能接上。</div>
             </div>
           </div>
 
-          <!-- Center Stage: The iPhone 16 Pro Device -->
           <div class="showcase-stage">
-            <div class="phone-ambient-glow" id="phoneGlow"></div>
-
-            <div class="iphone-device">
-              <!-- Dynamic Island -->
-              <div class="dynamic-island">
-                <div class="camera-lens"></div>
-              </div>
-
-              <!-- Top Status Bar -->
+            <div class="phone-ambient-glow" id="phoneGlow" aria-hidden="true"></div>
+            <div class="iphone-device" aria-label="Codaway Pocket 界面演示">
+              <div class="dynamic-island"><div class="camera-lens"></div></div>
               <div class="phone-status-bar">
                 <span>19:16</span>
                 <div class="status-icons">
-                  <span style="font-size: 10px; font-weight: 700; letter-spacing: -0.5px;">5G</span>
-                  <span>📶</span>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:-0.5px;">5G</span>
                   <div class="battery-icon">
-                    <span style="font-size: 11px; margin-right: 2px;">97</span>
-                    <div class="battery-pill">
-                      <div class="battery-fill"></div>
-                    </div>
+                    <span style="font-size:11px;margin-right:2px;">97</span>
+                    <div class="battery-pill"><div class="battery-fill"></div></div>
                     <div class="battery-nub"></div>
                   </div>
                 </div>
               </div>
-
-              <!-- In-Phone Interactive Toast -->
-              <div class="phone-toast" id="phoneToast">
+              <div class="phone-toast" id="phoneToast" role="status" aria-live="polite">
                 <span>✓</span>
                 <span id="phoneToastText">已通过 R2 端到端密文流下载</span>
               </div>
-
-              <!-- Viewport with 5 Interactive Screens -->
               <div class="phone-viewport" id="phoneViewport">
-                
-                <!-- Screen 1: Chat Feed (IMG_8872.PNG) -->
                 <div class="screen-view active" id="view-chat">
                   <div class="chat-navbar">
-                    <div class="nav-circle-btn" onclick="switchScene('hub')">❮</div>
+                    <div class="nav-circle-btn" onclick="switchScene('hub')" role="button" tabindex="0">❮</div>
                     <div class="center-title-capsule">
                       <div class="chat-name">mojo</div>
-                      <div class="chat-substatus">
-                        <span class="status-dot blue"></span>
-                        <span>已完成 · 等待新指令</span>
-                      </div>
+                      <div class="chat-substatus"><span class="status-dot blue"></span><span>已完成 · 等待新指令</span></div>
                     </div>
-                    <div class="nav-circle-btn" onclick="switchScene('git')">•••</div>
+                    <div class="nav-circle-btn" onclick="switchScene('git')" role="button" tabindex="0">•••</div>
                   </div>
-
                   <div class="chat-feed">
-                    <!-- File Attachment Card 1 -->
                     <div class="file-card-bubble">
                       <div class="file-card-header">
-                        <div class="file-icon-box">📄</div>
+                        <div class="file-icon-box">MD</div>
                         <div class="file-meta-col">
                           <div class="file-badge-row">
                             <span class="file-type-badge">文件</span>
                             <span class="file-name-text">development-plan-v2.md</span>
                           </div>
-                          <span class="file-path-sub">ghost_mojo/development-plan... · 4.9 KB</span>
+                          <span class="file-path-sub">ghost_mojo · 4.9 KB</span>
                         </div>
                       </div>
                       <div class="file-assoc-text">关联文件: development-plan-v2.md</div>
-                      <button class="btn-download-e2ee" onclick="triggerPhoneToast('已通过 R2 端到端密文流下载至手机')">
-                        <span>☁️</span>
-                        <span>下载到手机 (R2 端到端加密)</span>
-                      </button>
-                      <div class="btn-raw-preview" onclick="triggerPhoneToast('原文预览: 640 B')">
-                        <span>⛶</span>
-                        <span>原文 (640 B) ↖</span>
-                      </div>
+                      <button type="button" class="btn-download-e2ee" onclick="triggerPhoneToast('已通过 R2 端到端密文流下载至手机')">下载到手机（端到端加密）</button>
+                      <button type="button" class="btn-raw-preview" onclick="triggerPhoneToast('原文预览: 640 B')">原文 (640 B)</button>
                     </div>
-
-                    <!-- User Bubble -->
                     <div class="user-msg-row">
                       <div class="user-bubble">
                         <div>development-plan-v2.md 在此基础上继续修改</div>
-                        <div class="bubble-meta">
-                          <span>14:13</span>
-                          <span>✓✓</span>
-                        </div>
+                        <div class="bubble-meta"><span>14:13</span><span>✓✓</span></div>
                       </div>
                     </div>
-
-                    <!-- Assistant Bubble -->
                     <div class="assistant-msg-row">
-                      <div class="assistant-bubble">
-                        我会把 v2 从阶段纲要继续细化成可执行清单：补上各阶段的具体产物、验证用例和进入下一阶段的门槛，同时保留原有文件。先核对一下当前文档内容。核对后发现计划有个关键落差：文档的 MVP 是 **1v1 对伪 Bot**，新版稿却把阶段内原型和三名 Bot 混在一起。接下来我会统一这条路线，并把每版的产物、测试场景和明确的...
-                      </div>
-                      <div class="btn-raw-preview" onclick="triggerPhoneToast('原文数据: 805 B')">
-                        <span>⛶</span>
-                        <span>原文 (805 B) ↖</span>
-                      </div>
-                    </div>
-
-                    <!-- File Attachment Card 2 -->
-                    <div class="file-card-bubble">
-                      <div class="file-card-header">
-                        <div class="file-icon-box">📄</div>
-                        <div class="file-meta-col">
-                          <div class="file-badge-row">
-                            <span class="file-type-badge">文件</span>
-                            <span class="file-name-text">development-plan-v2.md</span>
-                          </div>
-                          <span class="file-path-sub">ghost_mojo/development-plan... · 6.9 KB</span>
-                        </div>
-                      </div>
-                      <div class="file-assoc-text">关联文件: development-plan-v2.md</div>
-                      <button class="btn-download-e2ee" onclick="triggerPhoneToast('文件已加密校验，已缓存')">
-                        <span>☁️</span>
-                        <span>下载到手机 (R2 端到端加密)</span>
-                      </button>
+                      <div class="assistant-bubble">我会把 v2 从阶段纲要继续细化成可执行清单：补上各阶段的具体产物、验证用例和进入下一阶段的门槛，同时保留原有文件。核对后发现计划有个关键落差：文档的 MVP 是 1v1 对伪 Bot，新版稿却把阶段内原型和三名 Bot 混在一起。接下来我会统一这条路线…</div>
+                      <button type="button" class="btn-raw-preview" onclick="triggerPhoneToast('原文数据: 805 B')">原文 (805 B)</button>
                     </div>
                   </div>
-
-                  <!-- Bottom Input Bar -->
                   <div class="chat-bottom-bar">
-                    <button class="btn-command-pill" onclick="switchScene('modal')">
-                      <span>≡</span>
-                      <span>指令</span>
-                    </button>
-                    <button class="btn-attachment-icon" onclick="triggerPhoneToast('已打开系统附件拾取器')">📎</button>
-                    <div class="input-field-pill" onclick="switchScene('stepper')">输入消息...</div>
-                    <button class="btn-send-circle" onclick="switchScene('stepper')">↑</button>
+                    <button type="button" class="btn-command-pill" onclick="switchScene('modal')"><span>≡</span><span>指令</span></button>
+                    <button type="button" class="btn-attachment-icon" onclick="triggerPhoneToast('已打开系统附件拾取器')" aria-label="附件">📎</button>
+                    <div class="input-field-pill" onclick="switchScene('stepper')">输入消息…</div>
+                    <button type="button" class="btn-send-circle" onclick="switchScene('stepper')" aria-label="发送">↑</button>
                   </div>
                 </div>
 
-                <!-- Screen 2: Live Activity / Stepper (IMG_8874.PNG) -->
                 <div class="screen-view" id="view-stepper">
                   <div class="chat-navbar">
                     <div class="nav-circle-btn" onclick="switchScene('chat')">❮</div>
                     <div class="center-title-capsule">
                       <div class="chat-name">mojo</div>
-                      <div class="chat-substatus">
-                        <span class="status-dot green"></span>
-                        <span>运行中 · 思考规划</span>
-                      </div>
+                      <div class="chat-substatus"><span class="status-dot green"></span><span>运行中 · 思考规划</span></div>
                     </div>
                     <div class="nav-circle-btn" onclick="switchScene('git')">•••</div>
                   </div>
-
                   <div class="chat-feed">
                     <div class="user-msg-row">
                       <div class="user-bubble">
-                        <div>development-plan-v2.md 在此基础上继续修改</div>
-                        <div class="bubble-meta">
-                          <span>14:13</span>
-                          <span>✓✓</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="assistant-msg-row">
-                      <div class="assistant-bubble">
-                        我会把 v2 从阶段纲要继续细化成可执行清单，把测试场景和明确的验证步骤固化到开发规范中...
-                      </div>
-                    </div>
-
-                    <div class="user-msg-row">
-                      <div class="user-bubble">
                         <div>帮我做下一步规划</div>
-                        <div class="bubble-meta">
-                          <span>19:17</span>
-                          <span>✓</span>
-                        </div>
+                        <div class="bubble-meta"><span>19:17</span><span>✓</span></div>
                       </div>
                     </div>
-
-                    <!-- Glowing Stepper Card -->
                     <div class="stepper-card">
                       <div class="stepper-header-row">
-                        <div class="thinking-badge">
-                          <span class="pulse-dot"></span>
-                          <span>正在思考</span>
-                        </div>
+                        <div class="thinking-badge"><span class="pulse-dot"></span><span>正在思考</span></div>
                         <span class="stepper-timer" id="liveTimer">00:03</span>
                         <span class="stepper-last-active">最后活跃: 刚刚</span>
                       </div>
-
-                      <div class="stepper-status-line">
-                        <span>🧠</span>
-                        <span>任务已派发，正在准备执行环境...</span>
-                      </div>
-
-                      <div class="stepper-progress-bar">
-                        <div class="stepper-progress-fill"></div>
-                      </div>
-
+                      <div class="stepper-status-line"><span>任务已派发，正在准备执行环境…</span></div>
+                      <div class="stepper-progress-bar"><div class="stepper-progress-fill"></div></div>
                       <div class="stepper-actions-row">
-                        <button class="pill-btn-terminal" onclick="triggerPhoneToast('已打开实时 PTY 终端流抽屉')">
-                          <span>⌨</span>
-                          <span>终端面板</span>
-                        </button>
-                        <button class="pill-btn-interrupt" onclick="triggerPhoneToast('向当前轮次发送了中断请求 (SIGINT)')">
-                          <span>■</span>
-                          <span>中断</span>
-                        </button>
+                        <button type="button" class="pill-btn-terminal" onclick="triggerPhoneToast('已打开实时 PTY 终端流抽屉')">终端面板</button>
+                        <button type="button" class="pill-btn-interrupt" onclick="triggerPhoneToast('向当前轮次发送了中断请求 (SIGINT)')">中断</button>
                       </div>
                     </div>
                   </div>
-
                   <div class="chat-bottom-bar">
-                    <button class="btn-command-pill" onclick="switchScene('modal')">
-                      <span>≡</span>
-                      <span>指令</span>
-                    </button>
-                    <button class="btn-attachment-icon">📎</button>
-                    <div class="input-field-pill">正在规划执行中...</div>
-                    <button class="btn-send-circle" style="opacity: 0.5;">↑</button>
+                    <button type="button" class="btn-command-pill" onclick="switchScene('modal')"><span>≡</span><span>指令</span></button>
+                    <button type="button" class="btn-attachment-icon" aria-label="附件">📎</button>
+                    <div class="input-field-pill">正在规划执行中…</div>
+                    <button type="button" class="btn-send-circle" style="opacity:0.5;" aria-label="发送">↑</button>
                   </div>
                 </div>
 
-                <!-- Screen 3: Git Inspector Sheet (IMG_8873.PNG) -->
                 <div class="screen-view" id="view-git">
                   <div class="git-sheet-view">
                     <div class="sheet-drag-handle"></div>
                     <div class="sheet-header-row">
                       <div class="sheet-circle-icon" onclick="triggerPhoneToast('已向 Worker 请求 Git 最新状态')">↻</div>
                       <div class="sheet-header-title">工作区 Git 状态</div>
-                      <button class="btn-sheet-done" onclick="switchScene('chat')">完成</button>
+                      <button type="button" class="btn-sheet-done" onclick="switchScene('chat')">完成</button>
                     </div>
-
                     <div class="workspace-card">
                       <div class="ws-top-row">
-                        <div class="ws-folder-icon">📁</div>
+                        <div class="ws-folder-icon">/</div>
                         <div class="ws-names-col">
                           <div class="ws-title">ghost_mojo</div>
                           <div class="ws-subpath">ghost_mojo</div>
                         </div>
-                        <div class="branch-tag">
-                          <span>⑂</span>
-                          <span>main</span>
-                        </div>
+                        <div class="branch-tag"><span>main</span></div>
                       </div>
-                      <div class="ws-clean-badge">
-                        <span class="status-dot green"></span>
-                        <span>工作区干净</span>
-                      </div>
+                      <div class="ws-clean-badge"><span class="status-dot green"></span><span>工作区干净</span></div>
                     </div>
-
                     <div class="git-actions-grid">
-                      <div class="btn-git-action">
-                        <span>↺</span>
-                        <span>恢复本次修改</span>
-                      </div>
-                      <div class="btn-git-action">
-                        <span>✓</span>
-                        <span>暂存并提交</span>
-                      </div>
+                      <div class="btn-git-action"><span>恢复本次修改</span></div>
+                      <div class="btn-git-action"><span>暂存并提交</span></div>
                     </div>
-
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+                    <div class="git-meta-row">
                       <span>变更文件清单 (0)</span>
-                      <span style="font-size: 11px; color: #38bdf8; cursor: pointer;" onclick="triggerPhoneToast('工作区文件树已完全同步')">↻ 刷新</span>
+                      <button type="button" onclick="triggerPhoneToast('工作区文件树已完全同步')">刷新</button>
                     </div>
-
                     <div class="git-clean-card">
                       <div class="green-check-circle">✓</div>
-                      <div class="git-clean-title">工作区干净，无未提交的修改</div>
+                      <div class="git-clean-title">工作区干净，无未提交修改</div>
                       <div class="git-clean-sub">所有文件已与本地 Git 仓库保持同步。</div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Screen 4: Session Hub List (IMG_8875.PNG) -->
                 <div class="screen-view" id="view-hub">
                   <div class="hub-view">
                     <div class="hub-top-header">
                       <div class="nav-circle-btn" onclick="switchScene('chat')">❮</div>
                       <div class="hub-title">CodeCube 的会话</div>
                     </div>
-
-                    <!-- Session Row 1 -->
                     <div class="session-item-card" onclick="switchScene('chat')">
-                      <div class="session-avatar-circle avatar-cyan">📦</div>
+                      <div class="session-avatar-circle avatar-cyan">M</div>
                       <div class="session-info-col">
-                        <div class="session-top-line">
-                          <span class="session-title-text">mojo</span>
-                          <span class="session-time-text">19:17</span>
-                        </div>
-                        <div class="session-sub-line">
-                          <span>📁 ghost_mojo ·</span>
-                          <span class="session-driver-code">CODEX</span>
-                        </div>
+                        <div class="session-top-line"><span class="session-title-text">mojo</span><span class="session-time-text">19:17</span></div>
+                        <div class="session-sub-line"><span>ghost_mojo ·</span><span class="session-driver-code">CODEX</span></div>
                         <div class="session-preview-line">帮我做下一步规划</div>
                       </div>
-                      <span class="status-pill pill-running">● 运行中</span>
+                      <span class="status-pill pill-running">运行中</span>
                     </div>
-
-                    <!-- Session Row 2 -->
                     <div class="session-item-card" onclick="switchScene('chat')">
-                      <div class="session-avatar-circle avatar-purple">📁</div>
+                      <div class="session-avatar-circle avatar-purple">T</div>
                       <div class="session-info-col">
-                        <div class="session-top-line">
-                          <span class="session-title-text">测试列表展开</span>
-                          <span class="session-time-text">12:05</span>
-                        </div>
-                        <div class="session-sub-line">
-                          <span>📁 ghost_mojo ·</span>
-                          <span class="session-driver-code">OPENCODE</span>
-                        </div>
+                        <div class="session-top-line"><span class="session-title-text">测试列表展开</span><span class="session-time-text">12:05</span></div>
+                        <div class="session-sub-line"><span>ghost_mojo ·</span><span class="session-driver-code">OPENCODE</span></div>
                         <div class="session-preview-line">暂无消息</div>
                       </div>
-                      <span class="status-pill pill-new">● 新建</span>
+                      <span class="status-pill pill-new">新建</span>
                     </div>
-
-                    <!-- Session Row 3 -->
                     <div class="session-item-card" onclick="switchScene('chat')">
-                      <div class="session-avatar-circle avatar-blue">💬</div>
+                      <div class="session-avatar-circle avatar-blue">D</div>
                       <div class="session-info-col">
-                        <div class="session-top-line">
-                          <span class="session-title-text">ds 会话</span>
-                          <span class="session-time-text">昨天</span>
-                        </div>
-                        <div class="session-sub-line">
-                          <span>📁 ghost_mojo ·</span>
-                          <span class="session-driver-code">DEEPSEEK_TUI</span>
-                        </div>
+                        <div class="session-top-line"><span class="session-title-text">ds 会话</span><span class="session-time-text">昨天</span></div>
+                        <div class="session-sub-line"><span>ghost_mojo ·</span><span class="session-driver-code">DEEPSEEK</span></div>
                         <div class="session-preview-line">新写一份文档，标注未验证</div>
                       </div>
-                      <span class="status-pill pill-done">● 已完成</span>
+                      <span class="status-pill pill-done">已完成</span>
                     </div>
-
-                    <!-- Session Row 4 -->
                     <div class="session-item-card" onclick="switchScene('chat')">
-                      <div class="session-avatar-circle avatar-teal">🛠</div>
+                      <div class="session-avatar-circle avatar-teal">Q</div>
                       <div class="session-info-col">
-                        <div class="session-top-line">
-                          <span class="session-title-text">查询</span>
-                          <span class="session-time-text">11-02</span>
-                        </div>
-                        <div class="session-sub-line">
-                          <span>📁 codex_space ·</span>
-                          <span class="session-driver-code">CODEX</span>
-                        </div>
-                        <div class="session-preview-line">提炼 我先检查 Codaway worker...</div>
+                        <div class="session-top-line"><span class="session-title-text">查询</span><span class="session-time-text">11-02</span></div>
+                        <div class="session-sub-line"><span>codex_space ·</span><span class="session-driver-code">CODEX</span></div>
+                        <div class="session-preview-line">提炼 Worker 状态与连接链路…</div>
                       </div>
-                      <span class="status-pill pill-done">● 已完成</span>
+                      <span class="status-pill pill-done">已完成</span>
                     </div>
-
-                    <!-- Session Row 5 -->
-                    <div class="session-item-card" onclick="switchScene('chat')">
-                      <div class="session-avatar-circle avatar-indigo">📁</div>
-                      <div class="session-info-col">
-                        <div class="session-top-line">
-                          <span class="session-title-text">图片测试</span>
-                          <span class="session-time-text">11-01</span>
-                        </div>
-                        <div class="session-sub-line">
-                          <span>📁 codex_space ·</span>
-                          <span class="session-driver-code">CODEX</span>
-                        </div>
-                        <div class="session-preview-line">提炼 这是一个 **Apple iPhone/iPa...</div>
-                      </div>
-                      <span class="status-pill pill-stopped">● 已中断</span>
-                    </div>
-
-                    <!-- Floating Action Button -->
-                    <button class="btn-new-session-floating" onclick="switchScene('modal')">
-                      <span>+</span>
-                      <span>发起全新会话</span>
-                    </button>
+                    <button type="button" class="btn-new-session-floating" onclick="switchScene('modal')"><span>+</span><span>发起全新会话</span></button>
                   </div>
                 </div>
 
-                <!-- Screen 5: New Session Modal (IMG_8877.PNG) -->
                 <div class="screen-view" id="view-modal">
                   <div class="new-session-view">
                     <div class="sheet-drag-handle"></div>
                     <div class="modal-header-row">
                       <div class="modal-title-text">新建会话</div>
-                      <button class="btn-modal-cancel" onclick="switchScene('hub')">取消</button>
+                      <button type="button" class="btn-modal-cancel" onclick="switchScene('hub')">取消</button>
                     </div>
-
-                    <!-- Card 1: Name and Icon -->
                     <div class="modal-section-title">会话名称与图标</div>
                     <div class="modal-card">
                       <div class="name-icon-row">
                         <div class="dice-icon-box" id="diceIconBox" onclick="rollSessionIcon()">
                           <span id="activeDiceIcon">&lt;/&gt;</span>
-                          <span class="dice-mini-badge">🎲</span>
+                          <span class="dice-mini-badge">↻</span>
                         </div>
-                        <div style="flex: 1;">
-                          <div style="font-size: 12.5px; color: rgba(255,255,255,0.8);">输入会话名称 (留空默认工作区名)</div>
-                          <div style="font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 2px;">点击左侧图标可随机更换会话图标</div>
+                        <div>
+                          <div style="font-size:12.5px;color:rgba(255,255,255,0.8);">输入会话名称（留空默认工作区名）</div>
+                          <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;">点击左侧图标可随机更换</div>
                         </div>
                       </div>
                     </div>
-
-                    <!-- Card 2: Workspace -->
                     <div class="modal-section-title">会话工作区</div>
                     <div class="modal-card">
-                      <div class="dropdown-item-row">
-                        <span>选择工作区</span>
-                        <span class="dropdown-val">codex_space ⇕</span>
-                      </div>
+                      <div class="dropdown-item-row"><span>选择工作区</span><span class="dropdown-val">codex_space</span></div>
                     </div>
-
-                    <!-- Card 3: Driver and Model -->
                     <div class="modal-section-title">Agent 驱动与模型</div>
                     <div class="modal-card">
-                      <div class="dropdown-item-row">
-                        <span>交给谁</span>
-                        <span class="dropdown-val" style="color: #ffffff;">🧠 Codewhale(DS-TUI) ⇕</span>
-                      </div>
-
+                      <div class="dropdown-item-row"><span>交给谁</span><span class="dropdown-val" style="color:#fff;">Codewhale (DS-TUI)</span></div>
                       <div class="mode-selector-wrap">
-                        <div class="mode-label-row">
-                          <span>运行模式 (Mode)</span>
-                          <span class="mode-collab-tag" id="modeTag">交互协作</span>
-                        </div>
+                        <div class="mode-label-row"><span>运行模式</span><span class="mode-collab-tag" id="modeTag">交互协作</span></div>
                         <div class="mode-segmented-control">
-                          <button class="mode-segment-btn" data-mode="plan" onclick="setSessionMode('plan')">
-                            <span class="mode-title">Plan</span>
-                            <span class="mode-sub">规划</span>
-                          </button>
-                          <button class="mode-segment-btn active" data-mode="agent" onclick="setSessionMode('agent')">
-                            <span class="mode-title">Agent</span>
-                            <span class="mode-sub">交互</span>
-                          </button>
-                          <button class="mode-segment-btn" data-mode="yolo" onclick="setSessionMode('yolo')">
-                            <span class="mode-title">YOLO</span>
-                            <span class="mode-sub">自主</span>
-                          </button>
+                          <button type="button" class="mode-segment-btn" data-mode="plan" onclick="setSessionMode('plan')"><span class="mode-title">Plan</span><span class="mode-sub">规划</span></button>
+                          <button type="button" class="mode-segment-btn active" data-mode="agent" onclick="setSessionMode('agent')"><span class="mode-title">Agent</span><span class="mode-sub">交互</span></button>
+                          <button type="button" class="mode-segment-btn" data-mode="yolo" onclick="setSessionMode('yolo')"><span class="mode-title">YOLO</span><span class="mode-sub">自主</span></button>
                         </div>
                       </div>
-
-                      <div class="dropdown-item-row">
-                        <span>模型</span>
-                        <span class="dropdown-val">deepseek-chat ⇕</span>
-                      </div>
-
-                      <div class="dropdown-item-row">
-                        <span>思考程度</span>
-                        <span class="dropdown-val">低思考预算 (low) ⇕</span>
-                      </div>
+                      <div class="dropdown-item-row"><span>模型</span><span class="dropdown-val">deepseek-chat</span></div>
+                      <div class="dropdown-item-row"><span>思考程度</span><span class="dropdown-val">低思考预算</span></div>
                     </div>
-
-                    <!-- Submit CTA Button -->
-                    <button class="btn-create-start" onclick="createAndStartSession()">
-                      创建并开始
-                    </button>
+                    <button type="button" class="btn-create-start" onclick="createAndStartSession()">创建并开始</button>
                   </div>
                 </div>
-
               </div>
-
-              <!-- Bottom Home Indicator -->
-              <div class="home-indicator"></div>
+              <div class="home-indicator" aria-hidden="true"></div>
             </div>
           </div>
 
-          <!-- Right Column Callouts -->
           <div class="callout-column">
             <div class="callout-card">
-              <div class="callout-badge">📱 LIVE ACTIVITY</div>
-              <div class="callout-title">灵动岛实时任务旅程</div>
-              <div class="callout-desc">锁屏与灵动岛全天候监控耗时编译与多步代码演进。具备耗时计时器、前台步骤胶囊与即时中断控制。</div>
+              <div class="callout-badge">Live Activity</div>
+              <div class="callout-title">灵动岛任务旅程</div>
+              <div class="callout-desc">锁屏与灵动岛持续监控耗时编译与多步演进，支持即时中断与步骤胶囊。</div>
             </div>
             <div class="callout-card">
-              <div class="callout-badge">🌿 ZERO-POLLUTION GIT</div>
-              <div class="callout-title">工作区快照与安全回滚</div>
-              <div class="callout-desc">原生分支探测与工作区脏文件监控。支持一键暂存生成 Checkpoint 提交，不满意随时原子恢复丢弃改动。</div>
+              <div class="callout-badge">Git</div>
+              <div class="callout-title">工作区快照与回滚</div>
+              <div class="callout-desc">原生分支探测与脏文件监控。一键 Checkpoint，不满意随时原子恢复。</div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Bento Grid Section -->
-    <section>
-      <div class="section-title-wrap">
-        <div class="section-eyebrow">Architecture & Capabilities</div>
-        <h2 class="section-title">为专业开发者打造的移动端超级终端</h2>
-        <p class="section-desc">无论是日常离座巡检，还是户外紧急排障，Codaway 让您在 iPhone 与桌面工作站之间建立牢不可破的控制连接。</p>
+    <section class="steps-section" aria-labelledby="how-title">
+      <div class="section-title-wrap" style="margin-top:0;margin-bottom:0;">
+        <div class="section-eyebrow">How it works</div>
+        <h2 class="section-title" id="how-title">三端协同，一条加密链路</h2>
+        <p class="section-desc">Pocket 在手机发指令，Pipe 零知识中继，Worker 在桌面执行——无需暴露公网端口。</p>
       </div>
+      <div class="steps-grid">
+        <article class="step-card">
+          <div class="step-num">01 · Pocket</div>
+          <h3>iOS 原生控制台</h3>
+          <p>会话编排、终端流、Git 巡检与 Live Activity，把桌面 Agent 握在手里。</p>
+        </article>
+        <article class="step-card">
+          <div class="step-num">02 · Pipe</div>
+          <h3>零知识密文中继</h3>
+          <p>CPS-v1 密文帧路由。中继不解密、不落盘明文，只做盲转发。</p>
+        </article>
+        <article class="step-card">
+          <div class="step-num">03 · Worker</div>
+          <h3>桌面常驻守护</h3>
+          <p>Mac / Linux 反向连接，开机自启。零入网端口，亚毫秒级唤醒。</p>
+        </article>
+      </div>
+    </section>
 
+    <section id="architecture">
+      <div class="section-title-wrap">
+        <div class="section-eyebrow">Architecture</div>
+        <h2 class="section-title">为专业开发者打造的移动超级终端</h2>
+        <p class="section-desc">离座巡检或户外排障，在 iPhone 与桌面工作站之间建立牢靠的控制连接。</p>
+      </div>
       <div class="bento-grid">
         <div class="bento-card col-span-2">
-          <div class="bento-icon">🔐</div>
-          <h3>CPS v1 端到端无条件密文网络</h3>
-          <p>
-            基于自研 CPS (Codaway Pipe Spec) 协议，所有通信在离开设备前均通过 Curve25519 密钥协商与 ChaCha20-Poly1305 密文封装。云端 Pipe 中继完全零知识（Zero-Knowledge Blind Relay），不解密、不存储任何明文会话，保障核心资产主权。
-          </p>
+          <div class="bento-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3>CPS-v1 端到端密文网络</h3>
+          <p>所有通信在离开设备前经 Curve25519 协商与 ChaCha20-Poly1305 封装。Pipe 中继完全零知识，不解密、不存储明文会话，保障代码与凭据主权。</p>
           <div class="tag-row">
             <span class="tag">Curve25519</span>
             <span class="tag">ChaCha20-Poly1305</span>
@@ -582,13 +379,12 @@
             <span class="tag">Zero-Knowledge</span>
           </div>
         </div>
-
         <div class="bento-card">
-          <div class="bento-icon">⚡️</div>
-          <h3>跨 Agent 统一编排驱动</h3>
-          <p>
-            原生兼容 Codex、Claude Code、OpenCode 与 DeepSeek TUI。支持在手机上一键切换模型、调整思考预算，快速下发 /plan、/review 与 /fast 指令。
-          </p>
+          <div class="bento-icon icon-purple" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <h3>跨 Agent 统一编排</h3>
+          <p>兼容 Codex、Claude Code、OpenCode 与 DeepSeek TUI。手机上一键切换模型与思考预算，快速下发 /plan、/review。</p>
           <div class="tag-row">
             <span class="tag">Codex</span>
             <span class="tag">Claude Code</span>
@@ -596,29 +392,27 @@
             <span class="tag">DeepSeek</span>
           </div>
         </div>
-
         <div class="bento-card">
-          <div class="bento-icon">📱</div>
-          <h3>Pocket iOS 原生客户终端</h3>
-          <p>
-            支持灵动岛与锁屏实时活动（Live Activity）监控耗时任务进度，配备双列并排横屏 Git 差异查看器、文件快速引用 (@ 键检索) 及 FaceID 生物快速解锁。
-          </p>
+          <div class="bento-icon icon-amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/></svg>
+          </div>
+          <h3>Pocket 原生体验</h3>
+          <p>灵动岛与锁屏 Live Activity、横屏 Git 差异查看、文件 @ 引用，以及 Face ID 快速解锁。</p>
           <div class="tag-row">
             <span class="tag">Live Activity</span>
             <span class="tag">Git Inspector</span>
-            <span class="tag">FaceID Unlock</span>
+            <span class="tag">Face ID</span>
           </div>
         </div>
-
         <div class="bento-card col-span-2">
-          <div class="bento-icon">🛡</div>
+          <div class="bento-icon icon-green" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
           <h3>Sovereign Worker 常驻守护</h3>
-          <p>
-            运行于 Mac 或 Linux 宿主机上的自研守护程序。无需暴露公网端口或配置复杂 NAT 穿透，开机自启并通过反向 WebSocket 链路实现亚毫秒级响应唤醒。
-          </p>
+          <p>运行于 Mac 或 Linux 的自研守护。无需暴露公网端口或复杂 NAT，开机自启，反向 WebSocket 链路亚毫秒响应。</p>
           <div class="tag-row">
             <span class="tag">Zero Inbound Ports</span>
-            <span class="tag">macOS / Linux Daemon</span>
+            <span class="tag">macOS / Linux</span>
             <span class="tag">PTY Multiplexer</span>
             <span class="tag">Auto Reconnect</span>
           </div>
@@ -626,30 +420,47 @@
       </div>
     </section>
 
-    <!-- Call to Action Banner -->
     <section class="cta-banner">
-      <h2>准备好接管您的桌面 AI 工作流了吗？</h2>
-      <p>仅需 30 秒创建账号，并在手机与电脑间建立端到端加密连接。</p>
+      <h2>准备好接管桌面 AI 工作流了吗？</h2>
+      <p>创建账号，在手机与电脑间建立端到端加密连接。</p>
       <a href="/register" class="btn-primary">
-        <span>立即免费注册 Codaway 账号</span>
-        <span>→</span>
+        <span>立即免费注册</span>
+        <span class="btn-arrow" aria-hidden="true">→</span>
       </a>
     </section>
   </main>
-
-  <!-- Footer -->
   <footer>
-    <div class="container">
-      <p>© 2026 Codaway Project · All Rights Reserved · End-to-End Encrypted Developer Console</p>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-brand-row">
+          <div class="brand-logo" aria-hidden="true">C</div>
+          <span class="brand-name">Codaway</span>
+        </div>
+        <p>移动端 AI 编程控制台。Pocket · Worker · Pipe，端到端加密连接桌面 Agent。</p>
+      </div>
+      <div class="footer-nav">
+        <div class="footer-col">
+          <h4>产品</h4>
+          <a href="/">核心特性</a>
+          <a href="/roadmap">版本路线</a>
+          <a href="/register">用户注册</a>
+        </div>
+        <div class="footer-col">
+          <h4>组件</h4>
+          <a href="/#architecture">Pocket</a>
+          <a href="/#architecture">Worker</a>
+          <a href="/#architecture">Pipe</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Codaway</span>
+      <span>End-to-End Encrypted Developer Console</span>
     </div>
   </footer>
-
   <script src="router.js"></script>
-
-  <!-- Interactive iPhone Demo Script -->
   <script>
     (function initInteractivePhone() {
-      // Scene Switcher Logic
       const glowMap = {
         chat: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(168, 85, 247, 0.15) 35%, transparent 70%)',
         stepper: 'radial-gradient(circle, rgba(16, 185, 129, 0.24) 0%, rgba(56, 189, 248, 0.18) 40%, transparent 70%)',
@@ -657,37 +468,23 @@
         hub: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(59, 130, 246, 0.18) 40%, transparent 70%)',
         modal: 'radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(217, 70, 239, 0.18) 40%, transparent 70%)'
       };
-
       window.switchScene = function (sceneKey) {
-        // Update Tabs
         document.querySelectorAll('.scene-tab').forEach(tab => {
-          tab.classList.toggle('active', tab.dataset.scene === sceneKey);
+          const on = tab.dataset.scene === sceneKey;
+          tab.classList.toggle('active', on);
+          tab.setAttribute('aria-selected', on ? 'true' : 'false');
         });
-
-        // Update Screens
         document.querySelectorAll('.screen-view').forEach(view => {
-          view.classList.toggle('active', view.id === `view-${sceneKey}`);
+          view.classList.toggle('active', view.id === 'view-' + sceneKey);
         });
-
-        // Update Ambient Glow
         const glowEl = document.getElementById('phoneGlow');
-        if (glowEl && glowMap[sceneKey]) {
-          glowEl.style.background = glowMap[sceneKey];
-        }
-
-        // Scroll viewport to top
+        if (glowEl && glowMap[sceneKey]) glowEl.style.background = glowMap[sceneKey];
         const vp = document.getElementById('phoneViewport');
         if (vp) vp.scrollTop = 0;
       };
-
-      // Tab Button Click Handlers
       document.querySelectorAll('.scene-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          switchScene(tab.dataset.scene);
-        });
+        tab.addEventListener('click', () => switchScene(tab.dataset.scene));
       });
-
-      // Phone Toast Helper
       let toastTimer = null;
       window.triggerPhoneToast = function (text) {
         const toast = document.getElementById('phoneToast');
@@ -696,50 +493,29 @@
         textEl.textContent = text;
         toast.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          toast.classList.remove('show');
-        }, 2200);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
       };
-
-      // Mode Switcher in Screen 5
-      const modeTags = {
-        plan: '方案规划',
-        agent: '交互协作',
-        yolo: '全自主执行'
-      };
-
+      const modeTags = { plan: '方案规划', agent: '交互协作', yolo: '全自主执行' };
       window.setSessionMode = function (mode) {
         document.querySelectorAll('.mode-segment-btn').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.mode === mode);
         });
         const tag = document.getElementById('modeTag');
-        if (tag && modeTags[mode]) {
-          tag.textContent = modeTags[mode];
-        }
-        triggerPhoneToast(`已切换运行模式: ${modeTags[mode]}`);
+        if (tag && modeTags[mode]) tag.textContent = modeTags[mode];
+        triggerPhoneToast('已切换运行模式: ' + modeTags[mode]);
       };
-
-      // Random Icon Roll in Screen 5
-      const sampleIcons = ['</>', '📦', '⚡️', '🛠', '💬', '🧬', '🛡'];
+      const sampleIcons = ['</>', '{}', 'λ', '◆', '⚙', '◈'];
       let iconIdx = 0;
       window.rollSessionIcon = function () {
         iconIdx = (iconIdx + 1) % sampleIcons.length;
         const iconEl = document.getElementById('activeDiceIcon');
-        if (iconEl) {
-          iconEl.textContent = sampleIcons[iconIdx];
-        }
-        triggerPhoneToast(`已随机更换会话图标: ${sampleIcons[iconIdx]}`);
+        if (iconEl) iconEl.textContent = sampleIcons[iconIdx];
+        triggerPhoneToast('已更换会话图标');
       };
-
-      // Session Creation Simulation
       window.createAndStartSession = function () {
-        triggerPhoneToast('会话创建成功，正在建立端到端加密通道...');
-        setTimeout(() => {
-          switchScene('stepper');
-        }, 600);
+        triggerPhoneToast('会话创建成功，正在建立加密通道…');
+        setTimeout(() => switchScene('stepper'), 600);
       };
-
-      // Real Ticking Seconds Counter for Stepper Card
       let seconds = 3;
       setInterval(() => {
         seconds++;
@@ -747,7 +523,7 @@
         if (timerEl) {
           const m = String(Math.floor(seconds / 60)).padStart(2, '0');
           const s = String(seconds % 60).padStart(2, '0');
-          timerEl.textContent = `${m}:${s}`;
+          timerEl.textContent = m + ':' + s;
         }
       }, 1000);
     })();
