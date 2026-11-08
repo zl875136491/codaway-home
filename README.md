@@ -19,3 +19,7 @@ Codaway 产品宣传、用户注册与路线图展示独立前端应用 (Homepag
 
 - **正式入口**：https://codaway-users.13dot8billion.site （`/register` 注册与重置密码，`/roadmap` 路线图）；Pipe API 使用独立域名 codaway.13dot8billion.site。
 - `home` 子命令负责投递静态文件，首次部署仍需安装 Nginx 模板并执行 `nginx -t` / reload。
+
+## 自动检查
+
+本地运行 `scripts/check`；GitHub Actions 的 `Checks` 工作流在 push / pull request 时运行同一入口，也支持手动触发。真实模型、R2 和生产账号测试单独显式启用，常规检查不依赖生产凭据。工作流里的外部 Actions 固定到已核对的提交。

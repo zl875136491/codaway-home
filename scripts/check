@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+node --check router.js
+node tests/navigation.cjs
+git diff --check
