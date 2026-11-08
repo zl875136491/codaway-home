@@ -322,7 +322,7 @@
             <div class="callout-card">
               <div class="callout-badge">Live Activity</div>
               <div class="callout-title">灵动岛任务旅程</div>
-              <div class="callout-desc">锁屏与灵动岛持续监控耗时编译与多步演进，支持即时中断与步骤胶囊。</div>
+              <div class="callout-desc">当前支持前台任务进度与步骤胶囊；锁屏、灵动岛和远程推送仍在规划与验证中。</div>
             </div>
             <div class="callout-card">
               <div class="callout-badge">Git</div>
@@ -397,7 +397,7 @@
             <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/></svg>
           </div>
           <h3>Pocket 原生体验</h3>
-          <p>灵动岛与锁屏 Live Activity、横屏 Git 差异查看、文件 @ 引用，以及 Face ID 快速解锁。</p>
+          <p>已实现横屏 Git 差异查看、文件 @ 引用和本机认证审批；灵动岛、锁屏 Live Activity 与远程推送待接入。</p>
           <div class="tag-row">
             <span class="tag">Live Activity</span>
             <span class="tag">Git Inspector</span>
@@ -517,7 +517,7 @@
         setTimeout(() => switchScene('stepper'), 600);
       };
       let seconds = 3;
-      setInterval(() => {
+      const liveTimer = setInterval(() => {
         seconds++;
         const timerEl = document.getElementById('liveTimer');
         if (timerEl) {
@@ -526,6 +526,7 @@
           timerEl.textContent = m + ':' + s;
         }
       }, 1000);
+      window.disposePage = () => { clearInterval(liveTimer); clearTimeout(toastTimer); };
     })();
   </script>
 </body>

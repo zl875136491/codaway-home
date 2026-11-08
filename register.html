@@ -146,6 +146,7 @@
   </footer>
   <script src="router.js"></script>
   <script>
+    (function initRegistration() {
     let cooldownTimer = null;
     let countdown = 0;
     let currentAuthMode = 'signup';
@@ -269,12 +270,16 @@
         if (!resp.ok) throw new Error(data.error || data.message || '验证码错误或已失效');
         document.getElementById('signupForm').style.display = 'none';
         document.getElementById('successPanel').style.display = 'block';
+        document.querySelector('#successPanel h2').textContent = currentAuthMode === 'reset' ? '密码重置成功' : '注册并激活成功';
       } catch (err) {
         showMsg(err.message, true);
         submitBtn.disabled = false;
         submitText.textContent = currentAuthMode === 'reset' ? '确认重置密码' : '立即注册并激活';
       }
     }
+    Object.assign(window, { switchAuthTab, sendVerifyCode, handleSignup });
+    window.disposePage = () => { if (cooldownTimer) clearInterval(cooldownTimer); };
+    })();
   </script>
 </body>
 </html>

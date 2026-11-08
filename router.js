@@ -70,6 +70,8 @@
       const doc = parser.parseFromString(html, 'text/html');
 
       const applyContent = () => {
+        if (typeof window.disposePage === "function") window.disposePage();
+        window.disposePage = undefined;
         const newMain = doc.querySelector('main');
         const curMain = document.querySelector('main');
         if (newMain && curMain) {
@@ -96,6 +98,7 @@
           if (s.src) newScript.src = s.src;
           else newScript.textContent = s.textContent;
           document.body.appendChild(newScript);
+          if (!s.src) newScript.remove();
         });
       };
 
