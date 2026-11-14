@@ -5,13 +5,21 @@ import { HomePage } from "./pages/HomePage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { RoadmapPage } from "./pages/RoadmapPage";
 import { Toaster } from "./components/affectui/ui/toaster-clean";
+import { SiteThemeProvider, useSiteTheme, type SiteTheme } from "./theme/siteTheme";
 
 function AppShell() {
   const { route } = useRouter();
+  const { siteTheme } = useSiteTheme();
 
   return (
-    <div data-theme="dark" className="dark flex min-h-screen flex-col bg-[#05060a] text-zinc-100">
-      <Toaster position="bottom-right" />
+    <div
+      data-site-theme={siteTheme}
+      className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text-main)] transition-colors duration-200"
+    >
+      {/* Keep site-level Toaster in its own theme scope so data-theme never bleeds into PocketSimulator */}
+      <div data-theme={siteTheme} className={siteTheme === "dark" ? "dark" : undefined}>
+        <Toaster position="bottom-right" />
+      </div>
       <Navbar />
       <main id="main" className="flex flex-1 flex-col">
         {route === "/register" ? (
@@ -27,10 +35,12 @@ function AppShell() {
   );
 }
 
-export function App() {
+export function App({ initialSiteTheme = "dark" }: { initialSiteTheme?: SiteTheme } = {}) {
   return (
-    <RouterProvider>
-      <AppShell />
-    </RouterProvider>
+    <SiteThemeProvider initialTheme={initialSiteTheme}>
+      <RouterProvider>
+        <AppShell />
+      </RouterProvider>
+    </SiteThemeProvider>
   );
 }

@@ -1,10 +1,17 @@
 @import "tailwindcss";
+@custom-variant site-light (&:where([data-site-theme="light"], [data-site-theme="light"] *));
+@custom-variant site-dark (&:where([data-site-theme="dark"], [data-site-theme="dark"] *));
 
-:root {
+:root,
+[data-site-theme="dark"] {
   --bg: #05060a;
   --bg-elevated: #0b0d14;
+  --nav-bg: rgba(5, 6, 10, 0.8);
   --surface: rgba(255, 255, 255, 0.032);
   --surface-strong: rgba(255, 255, 255, 0.055);
+  --surface-card: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+  --surface-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --surface-code: rgba(0, 0, 0, 0.5);
   --border: rgba(255, 255, 255, 0.085);
   --border-strong: rgba(255, 255, 255, 0.16);
   --text-main: #f4f6fb;
@@ -13,6 +20,200 @@
   --accent: #29b5f5;
   --accent-soft: rgba(41, 181, 245, 0.14);
   --emerald: #34d399;
+}
+
+[data-site-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f8fc;
+  --bg-elevated: #ffffff;
+  --nav-bg: rgba(246, 248, 252, 0.86);
+  --surface: rgba(15, 23, 42, 0.035);
+  --surface-strong: rgba(15, 23, 42, 0.065);
+  --surface-card: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.94) 100%);
+  --surface-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 12px 30px -16px rgba(15, 23, 42, 0.12);
+  --surface-code: rgba(15, 23, 42, 0.05);
+  --border: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-sub: #64748b;
+  --accent: #0284c7;
+  --accent-soft: rgba(2, 132, 199, 0.12);
+  --emerald: #059669;
+}
+
+[data-site-theme="light"] .codaway-card {
+  background: var(--surface-card);
+  border-color: var(--border);
+  box-shadow: var(--surface-card-shadow);
+}
+
+/* ---------- Isolated Pocket Simulator AffectUI Token Bindings ---------- */
+[data-pocket-root] .ui-agmc {
+  --ui-agmc-card: var(--pk-agmc-card);
+  --ui-agmc-strong: var(--pk-agmc-strong);
+  --ui-agmc-ink: var(--pk-agmc-ink);
+  --ui-agmc-text: var(--pk-agmc-text);
+  --ui-agmc-muted: var(--pk-agmc-muted);
+  --ui-agmc-faint: var(--pk-agmc-faint);
+  --ui-agmc-line: var(--pk-agmc-line);
+  --ui-agmc-edge: var(--pk-agmc-edge);
+  --ui-agmc-lane: var(--pk-agmc-lane);
+  --ui-agmc-well: var(--pk-agmc-well);
+  --ui-agmc-fill: var(--pk-agmc-fill);
+  --ui-agmc-accent: var(--pk-agmc-accent);
+  --ui-agmc-accent-bg: var(--pk-agmc-accent-bg);
+  --ui-agmc-green: var(--pk-agmc-green);
+  --ui-agmc-green-bg: var(--pk-agmc-green-bg);
+  --ui-agmc-red: var(--pk-agmc-red);
+  --ui-agmc-red-bg: var(--pk-agmc-red-bg);
+  --ui-agmc-amber: var(--pk-agmc-amber);
+  --ui-agmc-amber-bg: var(--pk-agmc-amber-bg);
+  --ui-agmc-shine: var(--pk-agmc-shine);
+  --ui-agmc-focus: var(--pk-agmc-focus);
+  --ui-agmc-seg: var(--pk-agmc-seg);
+  --ui-agmc-live: var(--pk-agmc-live);
+  --ui-agmc-hot: var(--pk-agmc-hot);
+  --ui-agmc-lift: var(--pk-agmc-lift);
+  --ui-agmc-shadow: var(--pk-agmc-shadow);
+}
+[data-pocket-root] .ui-agmc .ui-agmc__btn--go {
+  color: var(--pk-agmc-go-ink);
+}
+[data-pocket-root] .ui-agmc .ui-agmc__btn--go kbd {
+  background: var(--pk-agmc-go-kbd);
+  color: var(--pk-agmc-go-kbd-ink);
+}
+[data-pocket-root] .ui-agmc .ui-agmc__seg[data-state="running"]::before {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--pk-agmc-running-shimmer) 50%,
+    transparent 100%
+  );
+}
+
+[data-pocket-root] .ui-apc {
+  --ui-apc-tray: var(--pk-apc-tray);
+  --ui-apc-bg: var(--pk-apc-bg);
+  --ui-apc-ink: var(--pk-apc-ink);
+  --ui-apc-text: var(--pk-apc-text);
+  --ui-apc-muted: var(--pk-apc-muted);
+  --ui-apc-line: var(--pk-apc-line);
+  --ui-apc-soft: var(--pk-apc-soft);
+  --ui-apc-tile: var(--pk-apc-tile);
+  --ui-apc-hover: var(--pk-apc-hover);
+  --ui-apc-primary: var(--pk-apc-primary);
+  --ui-apc-primary-hover: var(--pk-apc-primary-hover);
+  --ui-apc-primary-ink: var(--pk-apc-primary-ink);
+  --ui-apc-primary-kbd: var(--pk-apc-primary-kbd);
+  --ui-apc-primary-kbd-ink: var(--pk-apc-primary-kbd-ink);
+  --ui-apc-kbd: var(--pk-apc-kbd);
+  --ui-apc-box: var(--pk-apc-box);
+  --ui-apc-box-hover: var(--pk-apc-box-hover);
+  --ui-apc-focus: var(--pk-apc-focus);
+  --ui-apc-timer-low: var(--pk-apc-timer-low);
+  --ui-apc-low-bg: var(--pk-apc-low-bg);
+  --ui-apc-low-ink: var(--pk-apc-low-ink);
+  --ui-apc-med-bg: var(--pk-apc-med-bg);
+  --ui-apc-med-ink: var(--pk-apc-med-ink);
+  --ui-apc-high-bg: var(--pk-apc-high-bg);
+  --ui-apc-high-ink: var(--pk-apc-high-ink);
+  --ui-apc-ok-bg: var(--pk-apc-ok-bg);
+  --ui-apc-ok-ink: var(--pk-apc-ok-ink);
+  --ui-apc-no-bg: var(--pk-apc-no-bg);
+  --ui-apc-no-ink: var(--pk-apc-no-ink);
+}
+
+[data-pocket-root] .ui-dcc {
+  --ui-dcc-card: var(--pk-dcc-card);
+  --ui-dcc-ink: var(--pk-dcc-ink);
+  --ui-dcc-text: var(--pk-dcc-text);
+  --ui-dcc-muted: var(--pk-dcc-muted);
+  --ui-dcc-faint: var(--pk-dcc-faint);
+  --ui-dcc-line: var(--pk-dcc-line);
+  --ui-dcc-fill: var(--pk-dcc-fill);
+  --ui-dcc-well: var(--pk-dcc-well);
+  --ui-dcc-pulse: var(--pk-dcc-pulse);
+  --ui-dcc-wait-bg: var(--pk-dcc-wait-bg);
+  --ui-dcc-wait-fg: var(--pk-dcc-wait-fg);
+  --ui-dcc-wire-ink: var(--pk-dcc-wire-ink);
+  --ui-dcc-wire-mid: var(--pk-dcc-wire-mid);
+  --ui-dcc-wire-soft: var(--pk-dcc-wire-soft);
+  --ui-dcc-focus: var(--pk-dcc-focus);
+  --ui-dcc-solid: var(--pk-dcc-solid);
+  --ui-dcc-on-solid: var(--pk-dcc-on-solid);
+  --ui-dcc-placeholder: var(--pk-dcc-placeholder);
+  --ui-dcc-shadow: var(--pk-dcc-shadow);
+  --ui-dcc-float: var(--pk-dcc-float);
+}
+
+[data-pocket-root] .ui-mdpc {
+  --ui-mdpc-card: var(--pk-mdpc-card);
+  --ui-mdpc-strong: var(--pk-mdpc-strong);
+  --ui-mdpc-ink: var(--pk-mdpc-ink);
+  --ui-mdpc-text: var(--pk-mdpc-text);
+  --ui-mdpc-muted: var(--pk-mdpc-muted);
+  --ui-mdpc-faint: var(--pk-mdpc-faint);
+  --ui-mdpc-icon: var(--pk-mdpc-icon);
+  --ui-mdpc-line: var(--pk-mdpc-line);
+  --ui-mdpc-line-strong: var(--pk-mdpc-line-strong);
+  --ui-mdpc-fill: var(--pk-mdpc-fill);
+  --ui-mdpc-wash: var(--pk-mdpc-wash);
+  --ui-mdpc-bar: var(--pk-mdpc-bar);
+  --ui-mdpc-bar-off: var(--pk-mdpc-bar-off);
+  --ui-mdpc-switch: var(--pk-mdpc-switch);
+  --ui-mdpc-knob: var(--pk-mdpc-knob);
+  --ui-mdpc-accent: var(--pk-mdpc-accent);
+  --ui-mdpc-focus: var(--pk-mdpc-focus);
+  --ui-mdpc-shadow-tile: var(--pk-mdpc-shadow-tile);
+  --ui-mdpc-shadow-pop: var(--pk-mdpc-shadow-pop);
+}
+[data-pocket-root] .ui-mdpc .ui-mdpc__glyph {
+  background: var(--pk-mdpc-glyph-bg);
+}
+
+[data-pocket-root] .ui-tlc {
+  --ui-tlc-ink: var(--pk-tlc-ink);
+  --ui-tlc-text: var(--pk-tlc-text);
+  --ui-tlc-accent: var(--pk-tlc-accent);
+  --ui-tlc-bg: var(--pk-tlc-bg);
+  --ui-tlc-shadow: var(--pk-tlc-shadow);
+  --ui-tlc-shine: var(--pk-tlc-shine);
+}
+
+[data-pocket-root] .ui-tsc {
+  --ui-tsc-card: var(--pk-tsc-card);
+  --ui-tsc-strong: var(--pk-tsc-strong);
+  --ui-tsc-ink: var(--pk-tsc-ink);
+  --ui-tsc-text: var(--pk-tsc-text);
+  --ui-tsc-icon: var(--pk-tsc-icon);
+  --ui-tsc-faint: var(--pk-tsc-faint);
+  --ui-tsc-hairline: var(--pk-tsc-hairline);
+  --ui-tsc-success: var(--pk-tsc-success);
+  --ui-tsc-danger: var(--pk-tsc-danger);
+  --ui-tsc-accent: var(--pk-tsc-accent);
+  --ui-tsc-focus: var(--pk-tsc-focus);
+  --ui-tsc-shadow: var(--pk-tsc-shadow);
+  --ui-tsc-shadow-hover: var(--pk-tsc-shadow-hover);
+  --ui-tsc-shadow-float: var(--pk-tsc-shadow-float);
+}
+[data-pocket-root] .ui-tsc .ui-tsc__action {
+  background: var(--pk-tsc-action-bg);
+}
+[data-pocket-root] .ui-tsc .ui-tsc__close {
+  background: var(--pk-tsc-close-bg);
+}
+
+/* Float Pocket inline notifications cleanly below Dynamic Island & above nav chrome */
+[data-pocket-root] .ui-tsc[data-inline] {
+  z-index: 60;
+  --ui-tsc-offset: 46px;
+  --ui-tsc-width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+}
+[data-pocket-root] .ui-tsc[data-inline][data-y="top"] {
+  top: 46px;
 }
 
 *,

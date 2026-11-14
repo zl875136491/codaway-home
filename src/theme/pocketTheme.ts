@@ -323,15 +323,37 @@ export const POCKET_THEMES: Record<PocketThemeId, PocketThemeSpec> = {
   },
 };
 
+const LIVE_RGB_MAP: Record<PocketThemeId, Record<PocketColorScheme, string>> = {
+  space: {
+    dark: "41, 181, 245",
+    light: "13, 133, 224",
+  },
+  terminal: {
+    dark: "0, 242, 115",
+    light: "13, 166, 82",
+  },
+  cyberpunk: {
+    dark: "255, 20, 148",
+    light: "219, 0, 122",
+  },
+};
+
 /** Maps a Pocket theme & scheme to AffectUI scoped CSS custom properties for genuine component adaptation. */
 export function buildAffectCssVars(themeId: PocketThemeId, scheme: PocketColorScheme): CSSProperties {
   const p = POCKET_THEMES[themeId][scheme];
   const isDark = scheme === "dark";
+  const liveRgb = LIVE_RGB_MAP[themeId][scheme];
   const shadow = isDark
     ? `0 0 0 1px ${p.line}, 0 8px 18px -8px rgba(0, 0, 0, 0.52)`
     : `0 0 0 1px ${p.line}, 0 4px 12px -6px rgba(0, 0, 0, 0.08)`;
+  const floatShadow = isDark
+    ? `0 0 0 1px ${p.line}, 0 12px 28px -10px rgba(0, 0, 0, 0.72)`
+    : `0 0 0 1px ${p.line}, 0 10px 24px -10px rgba(15, 23, 42, 0.16)`;
+  const lightOnPrimary = p.sendInk === "#ffffff";
+  const primaryKbd = lightOnPrimary ? "rgba(255, 255, 255, 0.18)" : "rgba(0, 0, 0, 0.12)";
+  const primaryKbdInk = lightOnPrimary ? "rgba(255, 255, 255, 0.84)" : "rgba(0, 0, 0, 0.72)";
 
-  return {
+  const uiVars: Record<string, string> = {
     // AgentMonitor (--ui-agmc-*)
     "--ui-agmc-card": p.card,
     "--ui-agmc-strong": p.strong,
@@ -355,6 +377,8 @@ export function buildAffectCssVars(themeId: PocketThemeId, scheme: PocketColorSc
     "--ui-agmc-shine": p.strong,
     "--ui-agmc-focus": p.accent,
     "--ui-agmc-seg": p.soft,
+    "--ui-agmc-live": liveRgb,
+    "--ui-agmc-hot": isDark ? "rgba(255, 255, 255, 0.36)" : "rgba(0, 0, 0, 0.3)",
     "--ui-agmc-lift": shadow,
     "--ui-agmc-shadow": `0 0 0 0.5px ${p.line}`,
 
@@ -371,6 +395,11 @@ export function buildAffectCssVars(themeId: PocketThemeId, scheme: PocketColorSc
     "--ui-apc-primary": p.accent,
     "--ui-apc-primary-hover": p.liveBlue,
     "--ui-apc-primary-ink": p.sendInk,
+    "--ui-apc-primary-kbd": primaryKbd,
+    "--ui-apc-primary-kbd-ink": primaryKbdInk,
+    "--ui-apc-kbd": isDark ? "rgba(255, 255, 255, 0.09)" : "rgba(0, 0, 0, 0.06)",
+    "--ui-apc-box": isDark ? "rgba(255, 255, 255, 0.28)" : "rgba(0, 0, 0, 0.22)",
+    "--ui-apc-box-hover": isDark ? "rgba(255, 255, 255, 0.46)" : "rgba(0, 0, 0, 0.38)",
     "--ui-apc-focus": p.accent,
     "--ui-apc-timer-low": p.amber,
     "--ui-apc-low-bg": p.soft,
@@ -393,13 +422,18 @@ export function buildAffectCssVars(themeId: PocketThemeId, scheme: PocketColorSc
     "--ui-dcc-line": p.line,
     "--ui-dcc-fill": p.hover,
     "--ui-dcc-well": p.well,
+    "--ui-dcc-pulse": p.accentBg,
     "--ui-dcc-wait-bg": p.accentBg,
     "--ui-dcc-wait-fg": p.accent,
+    "--ui-dcc-wire-ink": isDark ? "rgba(255, 255, 255, 0.42)" : "rgba(0, 0, 0, 0.42)",
+    "--ui-dcc-wire-mid": isDark ? "rgba(255, 255, 255, 0.16)" : "rgba(0, 0, 0, 0.16)",
+    "--ui-dcc-wire-soft": isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.07)",
     "--ui-dcc-focus": p.accent,
     "--ui-dcc-solid": p.accent,
     "--ui-dcc-on-solid": p.sendInk,
+    "--ui-dcc-placeholder": p.muted,
     "--ui-dcc-shadow": shadow,
-    "--ui-dcc-float": shadow,
+    "--ui-dcc-float": floatShadow,
 
     // ModelPicker (--ui-mdpc-*)
     "--ui-mdpc-card": p.card,
@@ -413,18 +447,22 @@ export function buildAffectCssVars(themeId: PocketThemeId, scheme: PocketColorSc
     "--ui-mdpc-line-strong": p.line,
     "--ui-mdpc-fill": p.hover,
     "--ui-mdpc-wash": p.soft,
+    "--ui-mdpc-bar": p.accent,
+    "--ui-mdpc-bar-off": p.soft,
+    "--ui-mdpc-switch": isDark ? "rgba(255, 255, 255, 0.16)" : "rgba(0, 0, 0, 0.12)",
+    "--ui-mdpc-knob": "#ffffff",
     "--ui-mdpc-accent": p.accent,
     "--ui-mdpc-focus": p.accent,
     "--ui-mdpc-shadow-tile": `0 0 0 0.5px ${p.line}`,
-    "--ui-mdpc-shadow-pop": shadow,
+    "--ui-mdpc-shadow-pop": floatShadow,
 
     // ThinkingLoader (--ui-tlc-*)
     "--ui-tlc-ink": p.strong,
     "--ui-tlc-text": p.bodyMuted,
     "--ui-tlc-accent": p.accent,
     "--ui-tlc-bg": p.card,
-    "--ui-tlc-shadow": `0 0 0 1px ${p.line}`,
-    "--ui-tlc-shine": p.strong,
+    "--ui-tlc-shadow": shadow,
+    "--ui-tlc-shine": isDark ? "#ffffff" : "rgba(255, 255, 255, 0.85)",
 
     // Toaster (--ui-tsc-*)
     "--ui-tsc-card": p.popover,
@@ -440,6 +478,24 @@ export function buildAffectCssVars(themeId: PocketThemeId, scheme: PocketColorSc
     "--ui-tsc-focus": p.accent,
     "--ui-tsc-shadow": shadow,
     "--ui-tsc-shadow-hover": shadow,
-    "--ui-tsc-shadow-float": shadow,
-  } as CSSProperties;
+    "--ui-tsc-shadow-float": floatShadow,
+  };
+
+  // Emit `--pk-*` shadow-free tokens so `[data-pocket-root] .ui-*` in main.css
+  // can bind AffectUI variables directly on each component node regardless of
+  // component stylesheet defaults or ancestor themes.
+  const result: Record<string, string> = { ...uiVars };
+  for (const [key, value] of Object.entries(uiVars)) {
+    result[key.replace(/^--ui-/, "--pk-")] = value;
+  }
+  result["--pk-agmc-go-ink"] = isDark ? "#0b0e14" : "#ffffff";
+  result["--pk-agmc-go-kbd"] = isDark ? "rgba(0, 0, 0, 0.14)" : "rgba(255, 255, 255, 0.18)";
+  result["--pk-agmc-go-kbd-ink"] = isDark ? "rgba(0, 0, 0, 0.65)" : "rgba(255, 255, 255, 0.85)";
+  result["--pk-agmc-running-shimmer"] = isDark
+    ? "rgba(255, 255, 255, 0.22)"
+    : "rgba(255, 255, 255, 0.45)";
+  result["--pk-mdpc-glyph-bg"] = p.well;
+  result["--pk-tsc-action-bg"] = p.soft;
+  result["--pk-tsc-close-bg"] = p.well;
+  return result as CSSProperties;
 }
