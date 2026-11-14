@@ -1,0 +1,29 @@
+{
+  "name": "codaway-home",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Codaway product homepage, interactive Pocket & AffectUI studio, account portal, and roadmap.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "typecheck": "tsc --noEmit --pretty false",
+    "check": "./scripts/check"
+  },
+  "dependencies": {
+    "lucide-react": "^0.483.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.3"
+  }
+}

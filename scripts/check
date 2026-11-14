@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-node --check router.js
-node tests/navigation.cjs
+./node_modules/.bin/tsc --noEmit --pretty false
+node --test tests/app.test.mjs
+node scripts/build.mjs
+node -e '
+const fs = require("node:fs");
+const assert = require("node:assert/strict");
+const expectedTitles = {
+  "index.html": "Codaway — 把本机 AI Coding 工作站装进口袋",
+  "register.html": "账号注册与密码重置 — Codaway",
+  "roadmap.html": "产品路线图与里程碑 — Codaway",
+};
+for (const [page, expectedTitle] of Object.entries(expectedTitles)) {
+  const html = fs.readFileSync("dist/" + page, "utf8");
+  assert.ok(html.includes(`<title>${expectedTitle}</title>`), `${page} title mismatch`);
+  const cssMatches = [...html.matchAll(/href="(\/assets\/[^"]+\.css)"/g)];
+  const jsMatches = [...html.matchAll(/src="(\/assets\/[^"]+\.js)"/g)];
+  assert.ok(cssMatches.length >= 1, `${page} missing hashed css`);
+  assert.ok(jsMatches.length >= 1, `${page} missing hashed js`);
+  for (const m of [...cssMatches, ...jsMatches]) {
+    assert.ok(fs.existsSync("dist" + m[1]), `${page} references missing asset ${m[1]}`);
+  }
+}
+console.log("Home build: hashed assets and route metadata verified across dist/");
+'
 git diff --check
