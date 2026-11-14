@@ -1,23 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlignJustify,
   ArrowUp,
   ChevronDown,
   ChevronLeft,
   ChevronUp,
-  Cpu,
-  FolderGit2,
-  GitBranch,
-  Lock,
+  Image as ImageIcon,
   Moon,
   MoreHorizontal,
   Plus,
   RotateCcw,
   ScanFace,
-  ShieldCheck,
-  Slash,
+  Settings,
   Sparkles,
   Sun,
-  Terminal,
   Wifi,
   X,
 } from "lucide-react";
@@ -27,7 +23,8 @@ import {
   type PocketColorScheme,
   type PocketThemeId,
 } from "../theme/pocketTheme";
-import { DRIVERS } from "../data/codaway";
+import { useSiteTheme } from "../theme/siteTheme";
+import { DRIVERS, type DriverKey } from "../data/codaway";
 import { DriverIcon } from "./DriverIcon";
 import { AgentMonitor, type AgentRunStep } from "./affectui/ui/agent-monitor-clean";
 import { ApprovalCard, type ApprovalStatus } from "./affectui/ui/approval-card-clean";
@@ -35,65 +32,97 @@ import { DecisionCard, type Decision } from "./affectui/ui/decision-card-clean";
 import { ModelPicker, type ModelEffort, type PickerModel } from "./affectui/ui/model-picker-clean";
 import { ThinkingLoader } from "./affectui/ui/thinking-loader-clean";
 import { Toaster, toast } from "./affectui/ui/toaster-clean";
+import {
+  AtFilePickerOverlay,
+  FloatingAttachmentSheet,
+  FloatingCommandSheet,
+  GitInspectorView,
+  MentionChip,
+  POCKET_QUICK_FILES,
+  POCKET_SESSIONS,
+  SessionListScreen,
+  TerminalCommandCard,
+  WorkstationListScreen,
+  type PocketQuickFile,
+} from "./pocket/PocketSimulatorParts";
 
-type PhoneScreenTab = "chat" | "workstations" | "git";
+type PhoneScreenTab = "chat" | "sessions" | "workstations" | "git";
+
+interface ChatSentMessage {
+  text: string;
+  mentions: PocketQuickFile[];
+  attachment?: string;
+}
 
 const POCKET_TOASTER_ID = "pocket-sim-phone";
 
-const PICKER_MODELS: PickerModel[] = [
-  { id: "gpt-5.4", name: "GPT-5.4", description: "默认主力推理与代码重构", speed: 4, quality: 5, cost: 3 },
-  { id: "gpt-5.4-mini", name: "GPT-5.4 Mini", description: "超低延迟日常检索与小改动", speed: 5, quality: 4, cost: 1 },
-  { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", description: "长上下文代码审查与测试生成", speed: 4, quality: 5, cost: 3 },
-  { id: "opencode-acp", name: "OpenCode ACP", description: "标准 ACP 会话托管与多工具调用", speed: 4, quality: 4, cost: 2 },
-];
+const DRIVER_PICKER_MODELS: Record<DriverKey, PickerModel[]> = {
+  CODEX: [
+    { id: "gpt-5.6-luna", name: "gpt-5.6-luna", description: "主力旗舰推理与复杂代码重构", speed: 4, quality: 5, cost: 3 },
+    { id: "gpt-5.6-terra", name: "gpt-5.6-terra", description: "长上下文代码审计与多文件编辑", speed: 4, quality: 5, cost: 3 },
+    { id: "gpt-5.6-sol", name: "gpt-5.6-sol", description: "极速日常检索与轻量修补", speed: 5, quality: 4, cost: 1 },
+  ],
+  ANTIGRAVITY: [
+    { id: "gemini-4-argon", name: "gemini-4-argon", description: "Antigravity 默认旗舰 ACP 模型", speed: 4, quality: 5, cost: 3 },
+    { id: "gemini-4-hydrogen", name: "gemini-4-hydrogen", description: "多模态视觉与大型仓库理解", speed: 4, quality: 5, cost: 3 },
+    { id: "claude-opus-5-5", name: "claude-opus-5-5", description: "深度规划与精细代码重构", speed: 3, quality: 5, cost: 4 },
+  ],
+  CURSOR: [
+    { id: "claude-opus-5-5", name: "claude-opus-5-5", description: "Cursor Agent 规范推荐主力", speed: 4, quality: 5, cost: 3 },
+    { id: "composer-fast", name: "composer-fast", description: "低延迟跨文件 @ 引用修改", speed: 5, quality: 4, cost: 2 },
+    { id: "gpt-5.6-luna", name: "gpt-5.6-luna", description: "深度测试生成与架构审查", speed: 4, quality: 5, cost: 3 },
+  ],
+  CLAUDE_CODE: [
+    { id: "claude-sonnet-4-6", name: "claude-sonnet-4-6", description: "stream-json 双向授权主力模型", speed: 4, quality: 5, cost: 3 },
+    { id: "claude-opus-4-6", name: "claude-opus-4-6", description: "复杂跨模块设计与安全审计", speed: 3, quality: 5, cost: 4 },
+  ],
+  OPENCODE: [
+    { id: "opencode-acp", name: "opencode-acp", description: "标准 ACP JSON-RPC 多厂商托管", speed: 4, quality: 4, cost: 2 },
+  ],
+  DEEPSEEK_TUI: [
+    { id: "deepseek-reasoner", name: "deepseek-reasoner", description: "Codewhale Plan / Agent / YOLO", speed: 4, quality: 5, cost: 1 },
+  ],
+  SHELL: [{ id: "zsh", name: "zsh", description: "原生交互 PTY Shell", speed: 5, quality: 5, cost: 1 }],
+};
 
 const EFFORT_OPTIONS: { id: ModelEffort; label: string }[] = [
-  { id: "low", label: "低" },
-  { id: "medium", label: "中" },
-  { id: "high", label: "高" },
-  { id: "xhigh", label: "极高" },
+  { id: "minimal", label: "minimal" },
+  { id: "low", label: "low" },
+  { id: "medium", label: "medium" },
+  { id: "high", label: "high" },
+  { id: "xhigh", label: "xhigh" },
 ];
 
 const INITIAL_STEPS: AgentRunStep[] = [
   {
     id: "step-1",
-    label: `zsh -lc "sed -n '1,60p' deploy/nginx/codaway-users.conf"`,
+    label: `mcpToolCall · inspect MentionComposerTextView.swift`,
     kind: "read",
     state: "done",
     took: 11200,
-    tool: "Shell",
-    detail: "核对静态资源缓存策略与 /v1 反向代理规则",
-    output: "location /assets/ { expires 1y; add_header Cache-Control \"public, max-age=31536000, immutable\"; }",
+    tool: "MCP FileRead",
+    detail: "验证 @ 快捷文件高度收缩与行内芯片 × 删除回调",
+    output: "No deadlock on @ removal · UI layout verified",
   },
   {
     id: "step-2",
-    label: `zsh -lc "go test ./internal/shim ./internal/driver/opencode"`,
+    label: `/bin/zsh -lc "go test ./internal/shim ./internal/driver/antigravity"`,
     kind: "run",
     state: "done",
     took: 28400,
     tool: "Go Test",
-    detail: "验证 harness-shim 环形回放缓冲与 OpenCode ACP 会话恢复",
-    output: "ok github.com/zl875136491/codaway-worker/internal/shim 0.412s",
+    detail: "验证 harness-shim 环形回放缓冲与 Antigravity agy acp 重连",
+    output: "ok internal/shim (0.41s) · ok internal/driver/antigravity (0.63s)",
   },
   {
     id: "step-3",
-    label: `编辑内部状态：SessionStore.swift & DriverConfig.swift`,
+    label: `同步 unified brand_icons 至 Pocket 与 Web 首页`,
     kind: "edit",
     state: "done",
     took: 14100,
     tool: "Workspace Edit",
-    detail: "同步各驱动圆形图标配置与对话历史持久化",
-    output: "3 files changed, +184 -42",
-  },
-  {
-    id: "step-4",
-    label: `生成精简汇报卡片并返回端到端测试摘要`,
-    kind: "think",
-    state: "done",
-    took: 4300,
-    tool: "MCP Card",
-    detail: "通过 codaway mcp-serve 输出紧凑状态摘要",
-    output: "4/4 checks passed",
+    detail: "补齐 Antigravity 与 Cursor 品牌识别图标",
+    output: "17 / 17 checks passed",
   },
 ];
 
@@ -104,42 +133,44 @@ const INITIAL_DECISIONS: Decision[] = [
     question: "检测到后台运行中的构建进程，下一步采用哪种托管策略？",
     options: [
       { id: "shim", title: "使用 harness-shim 常驻守护解耦", summary: "Worker 重启或升级期间 CLI 不中断，断线保留 4 MiB 输出缓冲", recommended: true },
-      { id: "direct", title: "仅当前会话托管（随 Worker 退出）", summary: "适合临时一次性排错任务" },
-      { id: "doctor", title: "先执行 codaway doctor 全量巡检", summary: "检测 5 个驱动可执行路径及身份私钥权限" },
+      { id: "doctor", title: "先执行 codaway doctor 全量巡检", summary: "检测 6 个 Worker 原生驱动可执行路径与私钥权限" },
     ],
   },
-];
-
-const GIT_FILES = [
-  { name: "DriverConfig.swift", badge: "SW", added: 87, removed: 0, note: "圆形驱动图标与描述元数据" },
-  { name: "TelegramChatView.swift", badge: "SW", added: 214, removed: 68, note: "紧凑胶囊输入框 + 拖拽 Handle + 内联模型配置" },
-  { name: "internal/shim/shim.go", badge: "GO", added: 869, removed: 0, note: "Unix Socket 守护解耦与环形回放" },
-  { name: "opencode/opencode.go", badge: "GO", added: 412, removed: 35, note: "OpenCode ACP stdio 驱动实现" },
 ];
 
 export function PocketSimulator() {
   const [themeId, setThemeId] = useState<PocketThemeId>("space");
   const [scheme, setScheme] = useState<PocketColorScheme>("dark");
   const [screenTab, setScreenTab] = useState<PhoneScreenTab>("chat");
+  const [activeSessionId, setActiveSessionId] = useState<string>(POCKET_SESSIONS[0].id);
+
+  const activeSession = useMemo(
+    () => POCKET_SESSIONS.find((s) => s.id === activeSessionId) ?? POCKET_SESSIONS[0],
+    [activeSessionId],
+  );
 
   // Live Pocket interaction state
-  const [thinkingDone, setThinkingDone] = useState(false);
+  const [thinkingDone, setThinkingDone] = useState(true);
   const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>("pending");
   const [decisions, setDecisions] = useState<Decision[]>(INITIAL_DECISIONS);
-  const [userMessages, setUserMessages] = useState<string[]>([]);
+  const [userMessages, setUserMessages] = useState<ChatSentMessage[]>([]);
 
-  // Pocket dual-state composer (unfocused compact capsule -> focused expandable drag-handle composer)
+  // Floating frosted composer state
   const [composerExpanded, setComposerExpanded] = useState(false);
-  const [composerBodyHeight, setComposerBodyHeight] = useState(96);
+  const [composerBodyHeight, setComposerBodyHeight] = useState(82);
   const [promptText, setPromptText] = useState("");
+  const [mentionFiles, setMentionFiles] = useState<PocketQuickFile[]>([POCKET_QUICK_FILES[1]]);
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [slashDrawerOpen, setSlashDrawerOpen] = useState(false);
   const [attachDrawerOpen, setAttachDrawerOpen] = useState(false);
+  const [atPickerOpen, setAtPickerOpen] = useState(false);
+  const [atPickerTall, setAtPickerTall] = useState(true);
+  const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
 
-  // Dual-axis model & thinking state with independent spinner lock
-  const [selectedModel, setSelectedModel] = useState("gpt-5.4");
+  // Dual-axis model & thinking state
+  const [selectedModel, setSelectedModel] = useState<string>(activeSession.model);
   const [pendingModelId, setPendingModelId] = useState<string | null>(null);
-  const [selectedEffort, setSelectedEffort] = useState<ModelEffort>("high");
+  const [selectedEffort, setSelectedEffort] = useState<ModelEffort>(activeSession.effort);
   const [pendingEffortId, setPendingEffortId] = useState<string | null>(null);
 
   const modelTimerRef = useRef<number | null>(null);
@@ -154,19 +185,58 @@ export function PocketSimulator() {
     };
   }, []);
 
+  const { siteTheme } = useSiteTheme();
   const spec = POCKET_THEMES[themeId];
   const palette = spec[scheme];
   const affectCssVars = useMemo(() => buildAffectCssVars(themeId, scheme), [themeId, scheme]);
-  const fontFamily = spec.isMono
-    ? '"JetBrains Mono", "SF Mono", ui-monospace, monospace'
-    : 'inherit';
+  const fontFamily = spec.isMono ? '"JetBrains Mono", "SF Mono", ui-monospace, monospace' : "inherit";
 
-  const currentModelName = PICKER_MODELS.find((m) => m.id === selectedModel)?.name ?? selectedModel;
-  const effortLabel = EFFORT_OPTIONS.find((e) => e.id === selectedEffort)?.label ?? selectedEffort;
+  const pickerModels = DRIVER_PICKER_MODELS[activeSession.driver] ?? DRIVER_PICKER_MODELS.CODEX;
+  const currentModelName = pickerModels.find((m) => m.id === selectedModel)?.name ?? selectedModel;
 
   const firePocketToast = (type: "success" | "info", msg: string, desc?: string) => {
     const fn = type === "success" ? toast.success : toast.info;
-    fn(msg, { description: desc, toaster: POCKET_TOASTER_ID, duration: 2600 });
+    fn(msg, { description: desc, toaster: POCKET_TOASTER_ID, duration: 2400 });
+  };
+
+  const scrollToChatBottom = (smooth = true) => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+    setShowScrollBottomBtn(false);
+  };
+
+  const handleChatScroll = () => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollBottomBtn(distanceFromBottom > 24);
+  };
+
+  useEffect(() => {
+    if (screenTab === "chat") {
+      requestAnimationFrame(() => scrollToChatBottom(false));
+    }
+  }, [screenTab, activeSessionId]);
+
+  const closeAllTrays = () => {
+    setModelPickerOpen(false);
+    setSlashDrawerOpen(false);
+    setAttachDrawerOpen(false);
+    setAtPickerOpen(false);
+  };
+
+  const handleSwitchSession = (id: string) => {
+    const next = POCKET_SESSIONS.find((s) => s.id === id) ?? POCKET_SESSIONS[0];
+    setActiveSessionId(id);
+    setSelectedModel(next.model);
+    setSelectedEffort(next.effort);
+    setUserMessages([]);
+    closeAllTrays();
+    setComposerExpanded(false);
+    setScreenTab("chat");
+    const driverName = DRIVERS.find((d) => d.id === next.driver)?.shortTitle ?? next.driver;
+    firePocketToast("info", `已进入 ${next.title}`, `${driverName} · 直接定位至最新会话底部`);
   };
 
   const handleSelectModel = (nextId: string) => {
@@ -176,9 +246,8 @@ export function PocketSimulator() {
     if (modelTimerRef.current) window.clearTimeout(modelTimerRef.current);
     modelTimerRef.current = window.setTimeout(() => {
       setPendingModelId(null);
-      const name = PICKER_MODELS.find((m) => m.id === nextId)?.name ?? nextId;
-      firePocketToast("success", `模型已切换为 ${name}`, "通过 SESSION_CONFIG 帧热更新至 Worker");
-    }, 680);
+      firePocketToast("success", `已切换至 ${nextId}`, "通过 SESSION_CONFIG 热更新至 Worker");
+    }, 620);
   };
 
   const handleSelectEffort = (nextEffort: ModelEffort) => {
@@ -188,26 +257,51 @@ export function PocketSimulator() {
     if (effortTimerRef.current) window.clearTimeout(effortTimerRef.current);
     effortTimerRef.current = window.setTimeout(() => {
       setPendingEffortId(null);
-      const label = EFFORT_OPTIONS.find((e) => e.id === nextEffort)?.label ?? nextEffort;
-      firePocketToast("info", `推理强度已更新：${label}`, "切换互不阻塞，立即作用于下一轮推理");
-    }, 620);
+      firePocketToast("info", `思考程度已更新：${nextEffort}`, "双轴独立锁定，即刻生效");
+    }, 580);
   };
 
-  const handleSendMessage = () => {
-    const text = promptText.trim();
-    if (!text) return;
-    setUserMessages((prev) => [...prev, text]);
-    setPromptText("");
+  const openAtPicker = () => {
     setModelPickerOpen(false);
     setSlashDrawerOpen(false);
     setAttachDrawerOpen(false);
-    firePocketToast("success", "指令已加密发出", `经 X25519 + ChaCha20 加密投递至工作站`);
-    requestAnimationFrame(() => {
-      chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: "smooth" });
-    });
+    setComposerExpanded(true);
+    setAtPickerTall(true);
+    setAtPickerOpen(true);
   };
 
-  // Drag handle on expanded composer
+  const handlePromptChange = (val: string) => {
+    setPromptText(val);
+    if (val.endsWith("@")) {
+      setModelPickerOpen(false);
+      setSlashDrawerOpen(false);
+      setAttachDrawerOpen(false);
+      setAtPickerTall(true);
+      setAtPickerOpen(true);
+    } else if (atPickerOpen && !val.includes("@")) {
+      setAtPickerOpen(false);
+    }
+  };
+
+  const handlePickFile = (file: PocketQuickFile) => {
+    setMentionFiles((prev) => (prev.some((f) => f.id === file.id) ? prev : [...prev, file]));
+    setPromptText((prev) => (prev.endsWith("@") ? prev.slice(0, -1) : prev));
+    setAtPickerOpen(false);
+    firePocketToast("info", `已内嵌文件引用 ${file.name}`, "点击胶囊右侧 × 可随时移除");
+  };
+
+  const handleSendMessage = () => {
+    const cleanText = promptText.replace(/@$/, "").trim();
+    if (!cleanText && mentionFiles.length === 0) return;
+    setUserMessages((prev) => [...prev, { text: cleanText, mentions: mentionFiles }]);
+    setPromptText("");
+    setMentionFiles([]);
+    closeAllTrays();
+    setComposerExpanded(false);
+    firePocketToast("success", "指令已端到端加密送达", "X25519 + ChaCha20 · 实时推入工作站会话");
+    requestAnimationFrame(() => scrollToChatBottom(true));
+  };
+
   const onHandlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     dragStartRef.current = { y: e.clientY, height: composerBodyHeight };
@@ -215,30 +309,44 @@ export function PocketSimulator() {
   const onHandlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStartRef.current) return;
     const dy = dragStartRef.current.y - e.clientY;
-    const next = Math.min(184, Math.max(64, dragStartRef.current.height + dy));
-    setComposerBodyHeight(next);
+    setComposerBodyHeight(Math.min(168, Math.max(58, dragStartRef.current.height + dy)));
   };
   const onHandlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStartRef.current) return;
     const dy = dragStartRef.current.y - e.clientY;
-    if (dragStartRef.current.height + dy < 54 && !modelPickerOpen) {
+    if (dragStartRef.current.height + dy < 48 && !modelPickerOpen && !atPickerOpen) {
       setComposerExpanded(false);
-      setComposerBodyHeight(96);
+      setComposerBodyHeight(82);
     }
     dragStartRef.current = null;
   };
 
   const collapseComposer = () => {
     setComposerExpanded(false);
-    setModelPickerOpen(false);
-    setSlashDrawerOpen(false);
-    setAttachDrawerOpen(false);
+    closeAllTrays();
   };
+
+  const anyOverlayOpen = modelPickerOpen || slashDrawerOpen || attachDrawerOpen || atPickerOpen;
+  const canSend = promptText.trim().length > 0 || mentionFiles.length > 0;
+  const activeDriverSpec = DRIVERS.find((d) => d.id === activeSession.driver);
+
+  const wallpaperBackground =
+    themeId === "space" && scheme === "dark"
+      ? [
+          "radial-gradient(1.2px 1.2px at 14% 22%, rgba(255,255,255,0.42), transparent)",
+          "radial-gradient(1px 1px at 78% 15%, rgba(147,197,253,0.45), transparent)",
+          "radial-gradient(1.2px 1.2px at 42% 48%, rgba(255,255,255,0.28), transparent)",
+          "radial-gradient(1px 1px at 88% 64%, rgba(255,255,255,0.34), transparent)",
+          "radial-gradient(1.3px 1.3px at 24% 82%, rgba(56,189,248,0.38), transparent)",
+          `radial-gradient(circle at 22% 16%, ${palette.wallpaperGlowA} 0%, transparent 52%)`,
+          `radial-gradient(circle at 82% 76%, ${palette.wallpaperGlowB} 0%, transparent 56%)`,
+        ].join(", ")
+      : `radial-gradient(circle at 20% 18%, ${palette.wallpaperGlowA} 0%, transparent 52%), radial-gradient(circle at 82% 76%, ${palette.wallpaperGlowB} 0%, transparent 56%)`;
 
   return (
     <div id="pocket-studio" className="flex flex-col items-center">
-      {/* Theme Controls matching Pocket ThemeManager */}
-      <div className="mb-4 flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 backdrop-blur-md">
+      {/* Theme & Scene Quick Controls above phone bezel (styled by siteTheme, completely independent of phone internals) */}
+      <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5 backdrop-blur-md">
         {(Object.keys(POCKET_THEMES) as PocketThemeId[]).map((id) => {
           const active = themeId === id;
           return (
@@ -249,10 +357,10 @@ export function PocketSimulator() {
                 setThemeId(id);
                 firePocketToast("info", `切换主题：${POCKET_THEMES[id].name}`, "ThemeManager 实时驱动全部 AffectUI 组件");
               }}
-              className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${
+              className={`rounded-xl px-2.5 py-1 text-xs font-medium transition ${
                 active
-                  ? "bg-white text-zinc-950 shadow-sm"
-                  : "text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100"
+                  ? "bg-white text-zinc-950 shadow-sm site-light:bg-slate-900 site-light:text-white"
+                  : "text-[var(--text-muted)] hover:bg-[var(--surface-strong)] hover:text-[var(--text-main)]"
               }`}
             >
               {POCKET_THEMES[id].name}
@@ -260,137 +368,303 @@ export function PocketSimulator() {
           );
         })}
 
-        <span className="mx-0.5 h-4 w-px bg-white/10" aria-hidden="true" />
+        <span className="mx-0.5 h-4 w-px bg-[var(--border)]" aria-hidden="true" />
 
         <button
           type="button"
+          data-testid="pocket-scheme-toggle"
           onClick={() => setScheme((s) => (s === "dark" ? "light" : "dark"))}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs text-zinc-300 transition hover:bg-white/10 hover:text-white"
-          title="切换 Pocket 深色 / 浅色外观"
+          className="inline-flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text-main)] transition hover:bg-[var(--surface-strong)]"
+          title="切换 Pocket 模拟器深色 / 浅色外观（仅影响手机画面）"
         >
-          {scheme === "dark" ? <Moon size={13} /> : <Sun size={13} />}
+          {scheme === "dark" ? <Moon size={12} /> : <Sun size={12} />}
           <span>{scheme === "dark" ? "深色" : "浅色"}</span>
         </button>
       </div>
 
+      {/* Quick Scene & Driver Switcher Pills (external to screen so phone stays 100% authentic iOS) */}
+      <div className="mb-3.5 flex flex-wrap items-center justify-center gap-1.5 text-[11px]">
+        {(
+          [
+            { id: "chat", label: "会话浮层" },
+            { id: "sessions", label: "会话列表" },
+            { id: "workstations", label: "我的工作站" },
+            { id: "git", label: "Git 变更" },
+          ] as const
+        ).map((scene) => (
+          <button
+            key={scene.id}
+            type="button"
+            onClick={() => setScreenTab(scene.id)}
+            className={`rounded-full border px-2.5 py-0.5 transition ${
+              screenTab === scene.id
+                ? "border-sky-400/50 bg-sky-500/15 font-medium text-sky-300 site-light:border-sky-600/35 site-light:text-sky-700"
+                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text-main)]"
+            }`}
+          >
+            {scene.label}
+          </button>
+        ))}
+
+        <span className="mx-0.5 text-[var(--text-sub)]">|</span>
+
+        {POCKET_SESSIONS.slice(0, 3).map((sess) => {
+          const active = activeSessionId === sess.id && screenTab === "chat";
+          const drv = DRIVERS.find((d) => d.id === sess.driver);
+          return (
+            <button
+              key={sess.id}
+              type="button"
+              onClick={() => handleSwitchSession(sess.id)}
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 transition ${
+                active
+                  ? "border-emerald-400/50 bg-emerald-500/15 font-medium text-emerald-200 site-light:border-emerald-600/35 site-light:text-emerald-700"
+                  : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              }`}
+              title={`切换至 ${drv?.displayName} 示例会话`}
+            >
+              <DriverIcon driver={sess.driver} size={11} scheme={siteTheme} />
+              <span>{drv?.shortTitle}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Interactive iPhone 16 Pro Shell */}
-      <div
-        className="relative w-full max-w-[392px] rounded-[46px] border-[3px] border-zinc-700/70 bg-[#0d0f14] p-2.5 shadow-[0_32px_90px_-20px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)]"
-      >
-        {/* Screen Viewport with active Pocket Theme CSS vars */}
+      <div className="relative w-full max-w-[390px] rounded-[48px] border-[3px] border-[var(--phone-shell-border,rgba(82,82,91,0.75))] bg-[var(--phone-shell-bg,#0d0f14)] p-2.5 shadow-[var(--phone-shell-shadow,0_32px_90px_-20px_rgba(0,0,0,0.85))]">
         <div
+          data-pocket-root=""
+          data-pocket-scheme={scheme}
           data-theme={scheme}
-          className={scheme === "dark" ? "dark relative flex h-[710px] flex-col overflow-hidden rounded-[36px]" : "relative flex h-[710px] flex-col overflow-hidden rounded-[36px]"}
+          className={
+            scheme === "dark"
+              ? "dark relative flex h-[716px] flex-col overflow-hidden rounded-[38px]"
+              : "relative flex h-[716px] flex-col overflow-hidden rounded-[38px]"
+          }
           style={{
             ...affectCssVars,
+            colorScheme: scheme,
             backgroundColor: palette.wallpaperBg,
-            backgroundImage: `radial-gradient(circle at 20% 18%, ${palette.wallpaperGlowA} 0%, transparent 52%), radial-gradient(circle at 82% 76%, ${palette.wallpaperGlowB} 0%, transparent 56%)`,
+            backgroundImage: wallpaperBackground,
             color: palette.strong,
             fontFamily,
           }}
         >
-          {/* Scoped inline Toaster inside Pocket Phone */}
-          <Toaster id={POCKET_TOASTER_ID} inline position="top-center" visibleToasts={2} />
-
-          {/* Status Bar + Dynamic Island */}
-          <div className="flex shrink-0 items-center justify-between px-6 pt-3 pb-1.5 text-[11px] font-semibold">
-            <span>19:26</span>
+          {/* Status Bar + Dynamic Island matching IMG_9005 */}
+          <div className="relative z-20 flex shrink-0 items-center justify-between px-6 pt-3 pb-1.5 text-[11px] font-semibold">
+            <span>14:22</span>
             <div className="flex h-[24px] w-[108px] items-center justify-between rounded-full bg-black px-2.5 shadow-inner ring-1 ring-white/10">
               <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
               <span className="font-mono text-[9px] text-zinc-400">E2EE</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Wifi size={12} />
-              <span className="rounded bg-current/15 px-1 text-[10px]">84</span>
+              <span
+                className="rounded px-1 text-[9.5px] font-bold"
+                style={{ backgroundColor: palette.greenBg, color: palette.green }}
+              >
+                94
+              </span>
             </div>
           </div>
 
-          {/* Pocket Navigation Header */}
-          <div
-            className="mx-3 mb-2 flex shrink-0 items-center justify-between rounded-2xl px-2.5 py-2 backdrop-blur-md"
-            style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}` }}
-          >
-            <button
-              type="button"
-              onClick={() => setScreenTab("workstations")}
-              className="flex h-7 w-7 items-center justify-center rounded-full transition hover:opacity-80"
-              style={{ backgroundColor: palette.well, color: palette.ink }}
-              aria-label="返回工作站列表"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <div className="min-w-0 text-center">
-              <div className="truncate text-[13px] font-semibold" style={{ color: palette.strong }}>
-                功能与安全优化
-              </div>
-              <div className="truncate text-[10px]" style={{ color: palette.muted }}>
-                Mac Studio · {DRIVERS[0].shortTitle} · harness-shim
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setScreenTab((prev) => (prev === "git" ? "chat" : "git"))}
-              className="flex h-7 w-7 items-center justify-center rounded-full transition hover:opacity-80"
-              style={{ backgroundColor: palette.well, color: palette.ink }}
-              aria-label="检查工作区 Git 变更"
-            >
-              <MoreHorizontal size={15} />
-            </button>
-          </div>
+          {/* Authentic Floating Top Chrome matching IMG_9003..9006 */}
+          <div className="relative z-20 flex shrink-0 items-center justify-between px-3.5 pb-2 pt-0.5">
+            {screenTab === "workstations" ? (
+              <button
+                type="button"
+                onClick={() => setScreenTab("sessions")}
+                className="flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-xl transition hover:brightness-110"
+                style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}`, color: palette.ink }}
+                aria-label="查看会话列表"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  closeAllTrays();
+                  if (screenTab === "chat") setScreenTab("sessions");
+                  else if (screenTab === "sessions") setScreenTab("workstations");
+                  else setScreenTab("chat");
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-xl transition hover:brightness-110"
+                style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}`, color: palette.ink }}
+                aria-label={screenTab === "sessions" ? "返回我的工作站" : "返回"}
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
 
-          {/* Pocket In-App Scene Switcher */}
-          <div className="mx-3 mb-2 grid shrink-0 grid-cols-3 gap-1 rounded-xl p-1" style={{ backgroundColor: palette.well }}>
-            {(
-              [
-                { id: "chat", label: "会话 & AffectUI" },
-                { id: "workstations", label: "工作站配对" },
-                { id: "git", label: "Git & R2 变更" },
-              ] as const
-            ).map((t) => {
-              const active = screenTab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setScreenTab(t.id)}
-                  className="rounded-lg py-1 text-[11px] font-medium transition"
-                  style={{
-                    backgroundColor: active ? palette.card : "transparent",
-                    color: active ? palette.accent : palette.bodyMuted,
-                    boxShadow: active ? `0 0 0 1px ${palette.line}` : "none",
-                  }}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
+            {/* Center floating capsule in chat, clean title in lists */}
+            {screenTab === "chat" ? (
+              <button
+                type="button"
+                onClick={() => setScreenTab("sessions")}
+                className="flex max-w-[235px] flex-col items-center rounded-full px-3.5 py-1 shadow-sm backdrop-blur-xl transition hover:brightness-110"
+                style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}` }}
+                title="点击查看 CodeCube 会话列表"
+              >
+                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold" style={{ color: palette.strong }}>
+                  <DriverIcon driver={activeSession.driver} size={13} scheme={scheme} />
+                  <span className="truncate">{activeSession.title}</span>
+                </div>
+                <div className="flex items-center gap-1 text-[9.5px]" style={{ color: palette.muted }}>
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        activeSession.status === "failed"
+                          ? palette.red
+                          : activeSession.status === "running"
+                            ? palette.green
+                            : palette.accent,
+                    }}
+                  />
+                  <span>
+                    {activeSession.statusText} · {activeDriverSpec?.shortTitle}
+                  </span>
+                </div>
+              </button>
+            ) : (
+              <div className="text-[14px] font-semibold" style={{ color: palette.strong }}>
+                {screenTab === "sessions"
+                  ? "CodeCube 的会话"
+                  : screenTab === "workstations"
+                    ? "我的工作站"
+                    : "工作区 Git & R2"}
+              </div>
+            )}
+
+            {/* Top-right circular button */}
+            {screenTab === "workstations" ? (
+              <button
+                type="button"
+                onClick={() =>
+                  firePocketToast("info", "主题与零信任安全设置", "私钥 Ed25519 + X25519 仅存本地 Keychain")
+                }
+                className="flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-xl transition hover:brightness-110"
+                style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}`, color: palette.ink }}
+                aria-label="打开设置"
+              >
+                <Settings size={15} />
+              </button>
+            ) : screenTab === "chat" ? (
+              <button
+                type="button"
+                onClick={() => setScreenTab("git")}
+                className="flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-xl transition hover:brightness-110"
+                style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}`, color: palette.ink }}
+                aria-label="检查工作区 Git 变更"
+              >
+                <MoreHorizontal size={15} />
+              </button>
+            ) : (
+              <span className="w-8" aria-hidden="true" />
+            )}
           </div>
 
           {/* MAIN SCREEN CONTENT */}
+          {screenTab === "sessions" && (
+            <SessionListScreen
+              sessions={POCKET_SESSIONS}
+              activeSessionId={activeSessionId}
+              palette={palette}
+              scheme={scheme}
+              onSelectSession={handleSwitchSession}
+              onNewSession={() => {
+                const idx = POCKET_SESSIONS.findIndex((s) => s.id === activeSessionId);
+                const next = POCKET_SESSIONS[(idx + 1) % POCKET_SESSIONS.length];
+                handleSwitchSession(next.id);
+              }}
+            />
+          )}
+
+          {screenTab === "workstations" && (
+            <WorkstationListScreen
+              palette={palette}
+              scheme={scheme}
+              onVerifyPair={() =>
+                firePocketToast("success", "短码指纹核验一致 · 8F3A-C21D", "拒绝同账号静默自动信任，安全性优先")
+              }
+              onSelectWorkstation={() => setScreenTab("sessions")}
+            />
+          )}
+
+          {screenTab === "git" && <GitInspectorView palette={palette} />}
+
           {screenTab === "chat" && (
-            <>
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              {/* Scrollable Chat Context passing directly beneath floating composer (NO bottom opaque mask!) */}
               <div
                 ref={chatScrollRef}
-                className="phone-scroll flex-1 space-y-3 overflow-y-auto px-3 pb-3"
+                onScroll={handleChatScroll}
                 onClick={() => {
-                  if (composerExpanded && !modelPickerOpen) collapseComposer();
+                  if (composerExpanded && !anyOverlayOpen) collapseComposer();
                 }}
+                className="phone-scroll flex-1 space-y-2.5 overflow-y-auto px-3.5 pt-1 pb-24"
               >
-                <div className="text-center text-[10px]" style={{ color: palette.muted }}>
-                  今天 · 19:26 · 端到端加密通道已连接
+                {/* Centered Date Pill — clickable to preview centered return-to-bottom button from IMG_9006 */}
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      chatScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="rounded-full px-2.5 py-0.5 text-[10px] transition hover:brightness-110"
+                    style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}`, color: palette.muted }}
+                    title="点击回溯顶部历史，观察居中回到底部按钮浮出"
+                  >
+                    今天 · 点击回溯顶部预览回底按钮
+                  </button>
                 </div>
 
-                {/* User Bubble */}
-                <div className="flex justify-end">
-                  <div
-                    className="max-w-[82%] rounded-[18px] rounded-br-[6px] px-3.5 py-2 text-[12.5px] leading-relaxed shadow-sm"
-                    style={{ backgroundColor: palette.userBubbleBg, color: palette.userBubbleInk }}
-                  >
-                    请检查 Worker 的 harness-shim 保活与 OpenCode ACP 驱动，运行单测并生成改动摘要。
+                {/* System / Slash Receipt Card matching IMG_9005 */}
+                <div
+                  className="max-w-[78%] rounded-[14px] px-2.5 py-1.5 text-[10.5px]"
+                  style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}` }}
+                >
+                  <div className="flex items-center gap-1.5 font-medium" style={{ color: palette.strong }}>
+                    <span className="text-[11px]" style={{ color: palette.green }}>
+                      ✓
+                    </span>
+                    <span>调整模型 · {activeDriverSpec?.shortTitle}</span>
+                    <span style={{ color: palette.accent }}>已完成</span>
+                  </div>
+                  <div className="mt-0.5 font-mono text-[9.5px]" style={{ color: palette.muted }}>
+                    /model {selectedModel} · {selectedEffort}
                   </div>
                 </div>
 
-                {/* Live ThinkingLoader (AffectUI React) */}
+                {/* Terminal Command Card matching IMG_9006 */}
+                <TerminalCommandCard
+                  cmd={activeSession.terminalCmd}
+                  palette={palette}
+                  onCopy={() => firePocketToast("info", "已复制终端命令", activeSession.terminalCmd)}
+                />
+
+                {/* User Bubble with Image Attachment Preview matching IMG_9005 */}
+                <div className="flex justify-end">
+                  <div
+                    className="max-w-[82%] space-y-1.5 rounded-[18px] rounded-br-[6px] p-2.5 text-[11.5px] leading-relaxed shadow-sm"
+                    style={{ backgroundColor: palette.userBubbleBg, color: palette.userBubbleInk }}
+                  >
+                    {activeSession.attachmentLabel && (
+                      <div
+                        className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-[10px]"
+                        style={{ backgroundColor: scheme === "dark" ? "rgba(0, 0, 0, 0.25)" : "rgba(0, 0, 0, 0.08)" }}
+                      >
+                        <ImageIcon size={13} className="shrink-0 opacity-85" />
+                        <span className="truncate font-mono">{activeSession.attachmentLabel}</span>
+                      </div>
+                    )}
+                    <div>{activeSession.userPrompt}</div>
+                    <div className="text-right text-[9.5px] opacity-75">✓ 已送达工作站 {activeSession.time}</div>
+                  </div>
+                </div>
+
+                {/* ThinkingLoader + Toggle */}
                 <div className="flex items-center gap-2">
                   <ThinkingLoader
                     phases={["正在深度思考", "梳理上下文", "规划执行路径"]}
@@ -404,7 +678,7 @@ export function PocketSimulator() {
                   <button
                     type="button"
                     onClick={() => setThinkingDone((v) => !v)}
-                    className="rounded-full px-2 py-0.5 text-[10px] font-medium transition"
+                    className="rounded-full px-2 py-0.5 text-[9.5px] font-medium transition"
                     style={{
                       backgroundColor: palette.well,
                       color: palette.bodyMuted,
@@ -415,99 +689,91 @@ export function PocketSimulator() {
                   </button>
                 </div>
 
-                {/* AgentMonitor (AffectUI React) with Circular Driver Icon & No redundant driver text */}
-                <div className="space-y-1.5">
-                  <AgentMonitor
-                    state="finished"
-                    circularFace
-                    hideName
-                    timestampText="19:26"
-                    agent={{
-                      name: "Codex",
-                      mark: <DriverIcon driver="CODEX" size={14} />,
-                    }}
-                    steps={INITIAL_STEPS}
-                    since={1000}
-                    until={59000}
-                    outcome={{ added: 184, removed: 42, files: 3 }}
-                    defaultFolded
-                    labels={{
-                      states: {
-                        idle: "空闲",
-                        running: "执行中",
-                        waiting: "需确认",
-                        paused: "已暂停",
-                        finished: "已完成",
-                        failed: "失败",
-                        cancelled: "已取消",
-                      },
-                      finishedIn: "已完成 · 用时",
-                      openLog: "终端",
-                      foldAway: "收起任务详情",
-                      openCard: "展开任务步骤",
-                    }}
-                    onOpenLog={() =>
-                      firePocketToast("info", "打开终端日志抽屉", "已加载最近 4 MiB harness-shim 缓冲")
-                    }
-                  />
-                  <p className="px-1 text-[10px]" style={{ color: palette.muted }}>
-                    ↑ 点击胶囊可展开 / 收起（圆形驱动图标 + 已完成 · 用时 · 4/4，历史记录持久保留）
-                  </p>
-                </div>
+                {/* AgentMonitor with Real Circular Brand Icon */}
+                <AgentMonitor
+                  state="finished"
+                  circularFace
+                  hideName
+                  timestampText={activeSession.time}
+                  agent={{
+                    name: activeDriverSpec?.shortTitle ?? "Codex",
+                    mark: <DriverIcon driver={activeSession.driver} size={14} scheme={scheme} />,
+                  }}
+                  steps={INITIAL_STEPS}
+                  since={1000}
+                  until={59000}
+                  outcome={{ added: 184, removed: 42, files: 3 }}
+                  defaultFolded
+                  labels={{
+                    states: {
+                      idle: "空闲",
+                      running: "执行中",
+                      waiting: "需确认",
+                      paused: "已暂停",
+                      finished: "已完成",
+                      failed: "失败",
+                      cancelled: "已取消",
+                    },
+                    finishedIn: "已完成 · 用时",
+                    openLog: "终端",
+                    foldAway: "收起详情",
+                    openCard: "展开步骤",
+                  }}
+                  onOpenLog={() => firePocketToast("info", "打开终端日志抽屉", "已加载 4 MiB harness-shim 环形缓冲")}
+                />
 
                 {/* Assistant Bubble */}
                 <div
-                  className="rounded-[18px] rounded-bl-[6px] p-3 text-[12px] leading-relaxed"
+                  className="rounded-[18px] rounded-bl-[6px] p-2.5 text-[11.5px] leading-relaxed"
                   style={{
                     backgroundColor: palette.assistantBubbleBg,
                     border: `1px solid ${palette.assistantBubbleBorder}`,
                     color: palette.ink,
                   }}
                 >
-                  已通过 <code className="font-mono text-[11px]">harness-shim</code> 验证后台保活与{" "}
-                  <code className="font-mono text-[11px]">opencode</code> ACP 会话恢复，所有单测通过。部署脚本需执行以下高权限指令，请确认：
+                  {activeSession.assistantSummary}
                 </div>
 
-                {/* Interactive ApprovalCard with Face ID badge */}
-                <div className="space-y-1.5">
+                {/* Interactive Face ID ApprovalCard */}
+                <div className="space-y-1">
                   <ApprovalCard
-                    title="执行生产构建与 nginx 配置校验"
-                    description="Worker 请求在工作区运行构建脚本并重载静态资源索引"
+                    title="执行构建校验并同步工作区"
+                    description="Worker 请求在工作区运行构建与测试脚本"
                     risk="medium"
-                    icon={<ScanFace size={15} />}
-                    label="CODEX · 安全审批 · Face ID"
+                    icon={<ScanFace size={14} />}
+                    label={`${activeDriverSpec?.shortTitle ?? "CODEX"} · Face ID 安全审批`}
                     details={[
-                      { label: "命令", value: "node scripts/build.mjs && nginx -t" },
-                      { label: "工作区", value: "~/codecho/source_code/codaway-home" },
+                      { label: "命令", value: activeSession.terminalCmd },
+                      { label: "工作区", value: `~/${activeSession.workspace}` },
                     ]}
                     status={approvalStatus}
                     approveLabel="面容 ID 批准"
                     denyLabel="拒绝"
-                    alwaysLabel="本工作区此类命令自动信任"
+                    alwaysLabel="本工作区自动信任"
                     shortcuts={false}
                     onApprove={() => {
                       setApprovalStatus("approved");
-                      firePocketToast("success", "Face ID 验证通过 · 已批准执行", "Worker 已继续执行构建任务");
+                      firePocketToast("success", "Face ID 验证通过 · 已批准", "Worker 已继续执行");
                     }}
                     onDeny={() => {
                       setApprovalStatus("denied");
-                      firePocketToast("info", "已拒绝该命令执行", "Worker 已中止高危操作");
+                      firePocketToast("info", "已拒绝该高危命令", "Worker 已中止执行");
                     }}
                   />
                   {approvalStatus !== "pending" && (
                     <button
                       type="button"
                       onClick={() => setApprovalStatus("pending")}
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium"
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[9.5px] font-medium"
                       style={{ backgroundColor: palette.well, color: palette.accent }}
                     >
-                      <RotateCcw size={11} /> 重置审批卡片演示
+                      <RotateCcw size={10} /> 重置审批演示
                     </button>
                   )}
                 </div>
 
                 {/* Interactive DecisionCard */}
-                {decisions.length > 0 ? (
+                {decisions.length > 0 && (
                   <DecisionCard
                     decisions={decisions}
                     labels={{
@@ -530,525 +796,416 @@ export function PocketSimulator() {
                           : typeof answer === "object"
                             ? answer.option
                             : answer;
-                      setUserMessages((prev) => [...prev, `已确认策略：${label}`]);
+                      setUserMessages((prev) => [...prev, { text: `已确认策略：${label}`, mentions: [] }]);
                       firePocketToast("success", "选择已发送至 Worker", `策略 ${label} 已下发`);
                     }}
                   />
-                ) : (
-                  <div
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-[11px]"
-                    style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}`, color: palette.bodyMuted }}
-                  >
-                    <span>决策卡片已完成响应</span>
-                    <button
-                      type="button"
-                      onClick={() => setDecisions(INITIAL_DECISIONS)}
-                      className="inline-flex items-center gap-1 font-medium"
-                      style={{ color: palette.accent }}
-                    >
-                      <RotateCcw size={11} /> 重新演示
-                    </button>
-                  </div>
                 )}
 
+                {/* User live sent messages with inline MentionChips */}
                 {userMessages.map((msg, idx) => (
-                  <div key={`${msg}-${idx}`} className="flex justify-end">
+                  <div key={`${msg.text}-${idx}`} className="flex justify-end">
                     <div
-                      className="max-w-[82%] rounded-[18px] rounded-br-[6px] px-3.5 py-2 text-[12px]"
+                      className="max-w-[84%] space-y-1.5 rounded-[18px] rounded-br-[6px] px-3 py-2 text-[11.5px]"
                       style={{ backgroundColor: palette.userBubbleBg, color: palette.userBubbleInk }}
                     >
-                      {msg}
+                      {msg.attachment && (
+                        <div
+                          className="rounded-lg px-2 py-1 font-mono text-[10px]"
+                          style={{ backgroundColor: scheme === "dark" ? "rgba(0, 0, 0, 0.25)" : "rgba(0, 0, 0, 0.08)" }}
+                        >
+                          🔒 {msg.attachment}
+                        </div>
+                      )}
+                      {msg.mentions.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {msg.mentions.map((f) => (
+                            <span
+                              key={f.id}
+                              className="rounded px-1.5 py-0.5 font-mono text-[10px]"
+                              style={{ backgroundColor: scheme === "dark" ? "rgba(0, 0, 0, 0.25)" : "rgba(0, 0, 0, 0.08)" }}
+                            >
+                              @{f.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {msg.text && <div>{msg.text}</div>}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Inline drawers above composer (ModelPicker / Slash / Attachment) */}
-              {modelPickerOpen && (
-                <div
-                  className="mx-3 mb-2 overflow-hidden shadow-lg backdrop-blur-xl"
-                  style={{
-                    backgroundColor: palette.popover,
-                    border: `1px solid ${palette.line}`,
-                    borderRadius: palette.cardRadius,
-                  }}
-                >
-                  <div
-                    className="flex items-center justify-between px-3 py-2 text-[11px] font-medium"
-                    style={{ borderBottom: `1px solid ${palette.line}`, color: palette.strong }}
-                  >
-                    <span>模型与推理强度配置</span>
+              {/* FLOATING COMPOSER & OVERLAYS (Zero bottom opaque mask, matching IMG_9005..9010) */}
+              <div className="pointer-events-none absolute right-0 bottom-2.5 left-0 z-30 flex flex-col">
+                {/* Centered Scroll-to-Latest Button matching IMG_9006 */}
+                {showScrollBottomBtn && !anyOverlayOpen && !composerExpanded && (
+                  <div className="mb-2 flex justify-center">
                     <button
                       type="button"
-                      onClick={() => setModelPickerOpen(false)}
-                      style={{ color: palette.muted }}
-                      aria-label="收起模型配置器"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                  <div className="p-1.5">
-                    <ModelPicker
-                      inline
-                      showTrigger={false}
-                      showRatings={false}
-                      showWebSearch={false}
-                      showKeycaps={false}
-                      models={PICKER_MODELS}
-                      value={selectedModel}
-                      onChange={handleSelectModel}
-                      thinking
-                      effort={selectedEffort}
-                      effortOptions={EFFORT_OPTIONS}
-                      onEffortChange={handleSelectEffort}
-                      pendingModelId={pendingModelId}
-                      pendingEffortId={pendingEffortId}
-                      labels={{
-                        modelHeader: "可用模型",
-                        effortLabel: "推理强度",
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {slashDrawerOpen && (
-                <div
-                  className="mx-3 mb-2 space-y-1 p-2.5 text-[11.5px]"
-                  style={{
-                    backgroundColor: palette.popover,
-                    border: `1px solid ${palette.line}`,
-                    borderRadius: palette.innerRadius,
-                  }}
-                >
-                  <div className="flex items-center justify-between pb-1" style={{ color: palette.muted }}>
-                    <span>快捷指令菜单（模型与思考已独立至左下角）</span>
-                    <button type="button" onClick={() => setSlashDrawerOpen(false)} aria-label="关闭指令菜单">
-                      <X size={13} />
-                    </button>
-                  </div>
-                  {[
-                    { cmd: "/goal", desc: "开启 Codex Goal Mode 持续执行目标" },
-                    { cmd: "/doctor", desc: "探测工作站环境、私钥与驱动状态" },
-                    { cmd: "/stop", desc: "中断当前正在执行的 Agent 回合" },
-                  ].map((item) => (
-                    <button
-                      key={item.cmd}
-                      type="button"
-                      onClick={() => {
-                        setSlashDrawerOpen(false);
-                        setPromptText(`${item.cmd} `);
-                        setComposerExpanded(true);
-                        firePocketToast("info", `已载入指令 ${item.cmd}`, item.desc);
-                      }}
-                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left transition"
-                      style={{ backgroundColor: palette.well, color: palette.ink }}
-                    >
-                      <span className="font-mono font-semibold" style={{ color: palette.accent }}>
-                        {item.cmd}
-                      </span>
-                      <span className="truncate pl-2 text-[10.5px]" style={{ color: palette.bodyMuted }}>
-                        {item.desc}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {attachDrawerOpen && (
-                <div
-                  className="mx-3 mb-2 flex items-center justify-between gap-2 p-2.5 text-[11.5px]"
-                  style={{
-                    backgroundColor: palette.popover,
-                    border: `1px solid ${palette.line}`,
-                    borderRadius: palette.innerRadius,
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Lock size={14} style={{ color: palette.green }} />
-                    <div>
-                      <div className="font-medium" style={{ color: palette.strong }}>
-                        R2 端到端加密附件直传
-                      </div>
-                      <div className="text-[10px]" style={{ color: palette.muted }}>
-                        前端加密上传后 15 分钟自动焚毁，中继服务器不可见明文
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAttachDrawerOpen(false);
-                      firePocketToast("success", "已附加 auth-audit.diff (14 KB)", "已通过端侧密钥加密上传至 R2");
-                    }}
-                    className="shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium"
-                    style={{ backgroundColor: palette.accentBg, color: palette.accent }}
-                  >
-                    模拟上传
-                  </button>
-                </div>
-              )}
-
-              {/* Bottom Pocket Dual-State Composer matching Screenshots 1/2/3 & compact pill */}
-              <div className="px-3 pb-3 pt-1">
-                {!composerExpanded ? (
-                  /* Unfocused compact pill: 46px full-rounded capsule matching internal buttons */
-                  <div
-                    className="flex h-[46px] items-center gap-2 rounded-full p-[6px] shadow-md transition-all"
-                    style={{
-                      backgroundColor: palette.card,
-                      border: `1px solid ${palette.line}`,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSlashDrawerOpen(false);
-                        setModelPickerOpen(false);
-                        setAttachDrawerOpen((v) => !v);
-                      }}
-                      className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full transition"
+                      onClick={() => scrollToChatBottom(true)}
+                      className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full shadow-lg backdrop-blur-xl transition hover:scale-105"
                       style={{
-                        backgroundColor: attachDrawerOpen ? palette.accentBg : palette.well,
-                        color: attachDrawerOpen ? palette.accent : palette.bodyMuted,
-                      }}
-                      aria-label="添加附件"
-                    >
-                      <Plus size={16} />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setComposerExpanded(true);
-                      }}
-                      className="flex-1 cursor-text text-left text-[13px]"
-                      style={{ color: palette.muted }}
-                      aria-label="点击展开输入框"
-                    >
-                      ...
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setAttachDrawerOpen(false);
-                        setModelPickerOpen(false);
-                        setSlashDrawerOpen((v) => !v);
-                      }}
-                      className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full transition"
-                      style={{ backgroundColor: palette.well, color: palette.bodyMuted }}
-                      aria-label="打开指令菜单"
-                    >
-                      <Slash size={14} />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setComposerExpanded(true);
-                      }}
-                      className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full transition"
-                      style={{
-                        backgroundColor: palette.well,
-                        color: palette.muted,
-                      }}
-                      aria-label="展开并发送消息"
-                    >
-                      <ArrowUp size={15} />
-                    </button>
-                  </div>
-                ) : (
-                  /* Expanded composer with top drag handle + bottom-left inline Model & Thinking button */
-                  <div
-                    className="flex flex-col shadow-lg transition-all"
-                    style={{
-                      backgroundColor: palette.card,
-                      border: `1px solid ${palette.accent}`,
-                      borderRadius: palette.trayRadius,
-                    }}
-                  >
-                    {/* Top drag grab handle */}
-                    <div
-                      onPointerDown={onHandlePointerDown}
-                      onPointerMove={onHandlePointerMove}
-                      onPointerUp={onHandlePointerUp}
-                      title="上下拖拽调整输入框高度，下拖可收起"
-                      className="flex h-5 cursor-ns-resize touch-none items-center justify-center"
-                    >
-                      <span className="h-1 w-9 rounded-full" style={{ backgroundColor: palette.muted, opacity: 0.45 }} />
-                    </div>
-
-                    <textarea
-                      value={promptText}
-                      onChange={(e) => setPromptText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      placeholder="..."
-                      style={{
-                        height: composerBodyHeight - 40,
+                        backgroundColor: palette.navBg,
+                        border: `1px solid ${palette.line}`,
                         color: palette.strong,
                       }}
-                      className="w-full resize-none bg-transparent px-4 pt-1 text-[13px] leading-relaxed outline-none placeholder:opacity-50"
-                      autoFocus
-                    />
-
-                    <div className="flex items-center gap-1.5 px-2.5 pb-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setModelPickerOpen(false);
-                          setSlashDrawerOpen(false);
-                          setAttachDrawerOpen((v) => !v);
-                        }}
-                        className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full transition"
-                        style={{
-                          backgroundColor: attachDrawerOpen ? palette.accentBg : palette.well,
-                          color: attachDrawerOpen ? palette.accent : palette.bodyMuted,
-                        }}
-                        aria-label="添加附件"
-                      >
-                        <Plus size={15} />
-                      </button>
-
-                      {/* Inline Model & Thinking Trigger next to '+' */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSlashDrawerOpen(false);
-                          setAttachDrawerOpen(false);
-                          setModelPickerOpen((v) => !v);
-                        }}
-                        className="inline-flex max-w-[175px] items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11.5px] font-medium transition"
-                        style={{
-                          backgroundColor: modelPickerOpen ? palette.accentBg : palette.well,
-                          color: modelPickerOpen ? palette.accent : palette.bodyMuted,
-                          border: `1px solid ${modelPickerOpen ? palette.accent : "transparent"}`,
-                        }}
-                      >
-                        <Sparkles size={11} style={{ color: palette.accent }} />
-                        <span className="truncate">
-                          {currentModelName} · {effortLabel}
-                        </span>
-                        {(pendingModelId || pendingEffortId) && (
-                          <span className="h-2.5 w-2.5 animate-spin rounded-full border border-current border-t-transparent" />
-                        )}
-                        {modelPickerOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                      </button>
-
-                      <div className="flex-1" />
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setModelPickerOpen(false);
-                          setAttachDrawerOpen(false);
-                          setSlashDrawerOpen((v) => !v);
-                        }}
-                        className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full transition"
-                        style={{ backgroundColor: palette.well, color: palette.bodyMuted }}
-                        aria-label="指令菜单"
-                      >
-                        <Slash size={13} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={promptText.trim() ? handleSendMessage : collapseComposer}
-                        className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full transition"
-                        style={{
-                          backgroundColor: promptText.trim() ? palette.sendBg : palette.well,
-                          color: promptText.trim() ? palette.sendInk : palette.bodyMuted,
-                          boxShadow: promptText.trim() ? `0 4px 12px ${palette.sendShadow}` : "none",
-                        }}
-                        aria-label={promptText.trim() ? "发送消息" : "收起输入框"}
-                      >
-                        {promptText.trim() ? <ArrowUp size={15} /> : <ChevronDown size={15} />}
-                      </button>
-                    </div>
+                      aria-label="回到底部最新消息"
+                    >
+                      <ChevronDown size={15} />
+                    </button>
                   </div>
                 )}
-              </div>
-            </>
-          )}
 
-          {screenTab === "workstations" && (
-            <div className="phone-scroll flex-1 space-y-2.5 overflow-y-auto px-3 pb-4">
-              <div
-                className="flex items-center justify-between rounded-2xl p-3"
-                style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}` }}
-              >
-                <div>
-                  <div className="text-[12.5px] font-semibold" style={{ color: palette.strong }}>
-                    扫码配对新工作站
-                  </div>
-                  <div className="text-[10.5px]" style={{ color: palette.muted }}>
-                    终端执行 <code className="font-mono">codaway start --pair</code> 生成一次性短码
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    firePocketToast("success", "短码指纹核验一致 · 8F3A-C21D", "禁止同账号静默自动信任，安全性优先")
-                  }
-                  className="shrink-0 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold"
-                  style={{ backgroundColor: palette.accent, color: palette.sendInk }}
-                >
-                  模拟核对
-                </button>
-              </div>
+                {/* Overlay Popovers above composer */}
+                <div className="pointer-events-auto">
+                  {atPickerOpen && (
+                    <AtFilePickerOverlay
+                      files={POCKET_QUICK_FILES}
+                      tall={atPickerTall}
+                      palette={palette}
+                      onToggleHeight={() => setAtPickerTall((v) => !v)}
+                      onPickFile={handlePickFile}
+                      onClose={() => setAtPickerOpen(false)}
+                    />
+                  )}
 
-              {[
-                {
-                  name: "Mac Studio · M3 Ultra",
-                  os: "macOS launchd · shim active",
-                  code: "8F3A-C21D",
-                  drivers: ["CODEX", "CLAUDE_CODE", "OPENCODE", "SHELL"] as const,
-                },
-                {
-                  name: "hk-prod-worker-02",
-                  os: "Ubuntu 24.04 systemd · 2 workspaces",
-                  code: "4E19-9A0B",
-                  drivers: ["CLAUDE_CODE", "DEEPSEEK_TUI", "SHELL"] as const,
-                },
-              ].map((w) => (
-                <div
-                  key={w.name}
-                  className="space-y-2 rounded-2xl p-3"
-                  style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: palette.green }} />
-                      <span className="text-[13px] font-semibold" style={{ color: palette.strong }}>
-                        {w.name}
-                      </span>
-                    </div>
-                    <span
-                      className="rounded-md px-1.5 py-0.5 font-mono text-[10px]"
-                      style={{ backgroundColor: palette.well, color: palette.bodyMuted }}
-                    >
-                      {w.code}
-                    </span>
-                  </div>
-                  <div className="text-[11px]" style={{ color: palette.muted }}>
-                    {w.os}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {w.drivers.map((dk) => (
-                      <span
-                        key={dk}
-                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                        style={{ backgroundColor: palette.accentBg, color: palette.accent }}
-                      >
-                        <DriverIcon driver={dk} size={10} />
-                        {DRIVERS.find((d) => d.id === dk)?.shortTitle ?? dk}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                  {slashDrawerOpen && (
+                    <FloatingCommandSheet
+                      driver={activeSession.driver}
+                      palette={palette}
+                      scheme={scheme}
+                      onSelectCmd={(cmd, desc) => {
+                        setSlashDrawerOpen(false);
+                        setPromptText(`${cmd} `);
+                        setComposerExpanded(true);
+                        firePocketToast("info", `已载入指令 ${cmd}`, desc);
+                      }}
+                      onClose={() => setSlashDrawerOpen(false)}
+                    />
+                  )}
 
-          {screenTab === "git" && (
-            <div className="phone-scroll flex-1 space-y-2.5 overflow-y-auto px-3 pb-4">
-              <div
-                className="space-y-2 rounded-2xl p-3"
-                style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}` }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <GitBranch size={14} style={{ color: palette.accent }} />
-                    <span className="text-[12.5px] font-semibold" style={{ color: palette.strong }}>
-                      Changes ({GIT_FILES.length})
-                    </span>
-                  </div>
-                  <span className="font-mono text-[11px]" style={{ color: palette.green }}>
-                    +1,582 <span style={{ color: palette.red }}>-103</span>
-                  </span>
-                </div>
-                <div className="space-y-1.5">
-                  {GIT_FILES.map((f) => (
+                  {attachDrawerOpen && (
+                    <FloatingAttachmentSheet
+                      palette={palette}
+                      onUploadPhoto={() => {
+                        setAttachDrawerOpen(false);
+                        setUserMessages((prev) => [
+                          ...prev,
+                          { text: "请分析这张界面截图的实现细节", mentions: [], attachment: "/photo · ui-preview.png (E2EE)" },
+                        ]);
+                        firePocketToast("success", "照片已端到端加密传输", "经 R2 零知识桶送达工作站并保留缩略图");
+                      }}
+                      onUploadFile={() => {
+                        setAttachDrawerOpen(false);
+                        setUserMessages((prev) => [
+                          ...prev,
+                          { text: "已上传补丁至工作区目录", mentions: [], attachment: "/file · auth-audit.diff (14 KB)" },
+                        ]);
+                        firePocketToast("success", "文件已加密传输至工作区", "R2 临时签名 15 分钟自动焚毁");
+                      }}
+                    />
+                  )}
+
+                  {modelPickerOpen && (
                     <div
-                      key={f.name}
-                      className="flex items-center justify-between rounded-xl px-2.5 py-2"
-                      style={{ backgroundColor: palette.lane }}
+                      className="mx-3.5 mb-2 overflow-hidden rounded-[22px] shadow-2xl backdrop-blur-2xl"
+                      style={{
+                        backgroundColor: palette.popover,
+                        border: `1px solid ${palette.line}`,
+                      }}
                     >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className="rounded px-1 font-mono text-[9px] font-bold"
-                            style={{ backgroundColor: palette.well, color: palette.accent }}
-                          >
-                            {f.badge}
-                          </span>
-                          <span className="truncate font-mono text-[11.5px]" style={{ color: palette.strong }}>
-                            {f.name}
-                          </span>
-                        </div>
-                        <div className="truncate text-[10px]" style={{ color: palette.muted }}>
-                          {f.note}
-                        </div>
+                      <div
+                        className="flex items-center justify-between px-3.5 py-2 text-[12px] font-semibold"
+                        style={{ borderBottom: `1px solid ${palette.line}`, color: palette.strong }}
+                      >
+                        <span>模型</span>
+                        <button
+                          type="button"
+                          onClick={() => setModelPickerOpen(false)}
+                          className="flex h-6 w-6 items-center justify-center rounded-full"
+                          style={{ backgroundColor: palette.well, color: palette.muted }}
+                          aria-label="收起模型选择面板"
+                        >
+                          <X size={12} />
+                        </button>
                       </div>
-                      <span className="shrink-0 pl-2 font-mono text-[10.5px]" style={{ color: palette.green }}>
-                        +{f.added} <span style={{ color: palette.red }}>-{f.removed}</span>
-                      </span>
+                      <div className="p-1.5">
+                        <ModelPicker
+                          inline
+                          showTrigger={false}
+                          showRatings={false}
+                          showWebSearch={false}
+                          showKeycaps={false}
+                          models={pickerModels}
+                          value={selectedModel}
+                          onChange={handleSelectModel}
+                          thinking
+                          effort={selectedEffort}
+                          effortOptions={EFFORT_OPTIONS}
+                          onEffortChange={handleSelectEffort}
+                          pendingModelId={pendingModelId}
+                          pendingEffortId={pendingEffortId}
+                          labels={{
+                            modelHeader: `${activeDriverSpec?.shortTitle ?? ""} 可用模型`,
+                            effortLabel: "思考程度",
+                          }}
+                        />
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
 
-              <div
-                className="flex items-center justify-between rounded-2xl p-3"
-                style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}` }}
-              >
-                <div className="flex items-center gap-2.5">
-                  <FolderGit2 size={16} style={{ color: palette.accent }} />
-                  <div>
-                    <div className="text-[12px] font-medium" style={{ color: palette.strong }}>
-                      R2 端到端加密附件策略
-                    </div>
-                    <div className="text-[10px]" style={{ color: palette.muted }}>
-                      Wi-Fi 自动下载 · 阈值 5 MB · 15m TTL 自动过期
-                    </div>
-                  </div>
-                </div>
-                <ShieldCheck size={16} style={{ color: palette.green }} />
-              </div>
+                {/* Floating Frosted Composer Bar (unfocused compact pill vs focused expanded card) */}
+                <div className="pointer-events-auto px-4">
+                  {!composerExpanded ? (
+                    <div
+                      className="flex h-[42px] items-center gap-1.5 rounded-full px-1.5 shadow-xl backdrop-blur-2xl transition-all"
+                      style={{
+                        backgroundColor: palette.navBg,
+                        border: `1px solid ${palette.line}`,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSlashDrawerOpen(false);
+                          setModelPickerOpen(false);
+                          setAtPickerOpen(false);
+                          setAttachDrawerOpen((v) => !v);
+                        }}
+                        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full transition"
+                        style={{
+                          backgroundColor: attachDrawerOpen ? palette.accent : palette.well,
+                          color: attachDrawerOpen ? palette.sendInk : palette.bodyMuted,
+                        }}
+                        aria-label={attachDrawerOpen ? "关闭附件面板" : "添加图片或文件"}
+                      >
+                        {attachDrawerOpen ? <X size={14} /> : <Plus size={15} />}
+                      </button>
 
-              <div
-                className="flex items-center justify-between rounded-2xl p-3"
-                style={{ backgroundColor: palette.card, border: `1px solid ${palette.line}` }}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Cpu size={16} style={{ color: palette.accent }} />
-                  <div>
-                    <div className="text-[12px] font-medium" style={{ color: palette.strong }}>
-                      工作站直连终端抽屉
+                      <button
+                        type="button"
+                        onClick={() => setComposerExpanded(true)}
+                        className="flex-1 cursor-text px-1.5 text-left text-[12.5px]"
+                        style={{ color: palette.muted }}
+                        aria-label="展开输入框"
+                      >
+                        接下来...
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={openAtPicker}
+                        className="flex h-[26px] items-center justify-center rounded-full px-2 text-[11px] font-semibold transition hover:brightness-110"
+                        style={{ backgroundColor: palette.well, color: palette.accent }}
+                        title="演示 @ 快捷文件引用"
+                      >
+                        @
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAttachDrawerOpen(false);
+                          setModelPickerOpen(false);
+                          setAtPickerOpen(false);
+                          setSlashDrawerOpen((v) => !v);
+                        }}
+                        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full transition"
+                        style={{
+                          backgroundColor: slashDrawerOpen ? palette.accent : palette.well,
+                          color: slashDrawerOpen ? palette.sendInk : palette.bodyMuted,
+                        }}
+                        aria-label={slashDrawerOpen ? "关闭指令菜单" : "打开三列指令菜单"}
+                      >
+                        {slashDrawerOpen ? <X size={14} /> : <AlignJustify size={13} />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setComposerExpanded(true)}
+                        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full transition"
+                        style={{ backgroundColor: palette.well, color: palette.muted }}
+                        aria-label="展开输入"
+                      >
+                        <ArrowUp size={14} />
+                      </button>
                     </div>
-                    <div className="text-[10px]" style={{ color: palette.muted }}>
-                      harness-shim 4 MiB 环形日志回放就绪
+                  ) : (
+                    <div
+                      className="flex flex-col rounded-[22px] shadow-2xl backdrop-blur-2xl transition-all"
+                      style={{
+                        backgroundColor: palette.navBg,
+                        border: `1px solid ${palette.accent}`,
+                      }}
+                    >
+                      {/* Top drag grab handle matching IMG_9010 */}
+                      <div
+                        onPointerDown={onHandlePointerDown}
+                        onPointerMove={onHandlePointerMove}
+                        onPointerUp={onHandlePointerUp}
+                        title="上下拖拽调整输入框高度，下滑收起"
+                        className="flex h-4 cursor-ns-resize touch-none items-center justify-center"
+                      >
+                        <span className="h-1 w-8 rounded-full" style={{ backgroundColor: palette.muted, opacity: 0.45 }} />
+                      </div>
+
+                      {/* Inline @ mention pills + active @ block matching IMG_9009 */}
+                      {(mentionFiles.length > 0 || atPickerOpen) && (
+                        <div className="flex flex-wrap items-center gap-1.5 px-3 pb-1">
+                          {mentionFiles.map((file) => (
+                            <MentionChip
+                              key={file.id}
+                              file={file}
+                              palette={palette}
+                              onRemove={() => setMentionFiles((prev) => prev.filter((item) => item.id !== file.id))}
+                            />
+                          ))}
+                          {atPickerOpen && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-[7px] px-1.5 py-0.5 text-[10.5px] font-semibold"
+                              style={{
+                                backgroundColor: "rgba(41, 181, 245, 0.22)",
+                                border: `1px solid ${palette.accent}`,
+                                color: palette.liveBlue,
+                              }}
+                            >
+                              @
+                              <button
+                                type="button"
+                                onClick={() => setAtPickerOpen(false)}
+                                className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full hover:bg-current/[0.15]"
+                                aria-label="关闭当前 @ 触发块"
+                              >
+                                <X size={9} />
+                              </button>
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <textarea
+                        value={promptText}
+                        onChange={(e) => handlePromptChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        placeholder="接下来...（输入 @ 选择工作区文件）"
+                        style={{ height: Math.max(40, composerBodyHeight - 36), color: palette.strong }}
+                        className="w-full resize-none bg-transparent px-3.5 text-[12px] leading-relaxed outline-none placeholder:opacity-55"
+                        autoFocus
+                      />
+
+                      <div className="flex items-center gap-1.5 px-2 pb-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setModelPickerOpen(false);
+                            setSlashDrawerOpen(false);
+                            setAtPickerOpen(false);
+                            setAttachDrawerOpen((v) => !v);
+                          }}
+                          className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full transition"
+                          style={{
+                            backgroundColor: attachDrawerOpen ? palette.accent : palette.well,
+                            color: attachDrawerOpen ? palette.sendInk : palette.bodyMuted,
+                          }}
+                          aria-label="添加附件"
+                        >
+                          {attachDrawerOpen ? <X size={14} /> : <Plus size={14} />}
+                        </button>
+
+                        {/* Inline Model & Thinking pill matching IMG_9009 / IMG_9010 */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSlashDrawerOpen(false);
+                            setAttachDrawerOpen(false);
+                            setAtPickerOpen(false);
+                            setModelPickerOpen((v) => !v);
+                          }}
+                          className="inline-flex max-w-[146px] items-center gap-1 rounded-full px-2.5 py-1 text-[10.5px] font-medium transition"
+                          style={{
+                            backgroundColor: modelPickerOpen ? palette.accentBg : palette.well,
+                            color: modelPickerOpen ? palette.accent : palette.bodyMuted,
+                            border: `1px solid ${modelPickerOpen ? palette.accent : "transparent"}`,
+                          }}
+                        >
+                          <Sparkles size={10} style={{ color: palette.accent }} />
+                          <span className="truncate">
+                            {currentModelName} · {selectedEffort}
+                          </span>
+                          {(pendingModelId || pendingEffortId) && (
+                            <span className="h-2.5 w-2.5 animate-spin rounded-full border border-current border-t-transparent" />
+                          )}
+                          {modelPickerOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setAtPickerOpen((v) => !v)}
+                          className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition"
+                          style={{
+                            backgroundColor: atPickerOpen ? palette.accentBg : palette.well,
+                            color: atPickerOpen ? palette.accent : palette.bodyMuted,
+                          }}
+                          aria-label="打开 @ 快捷文件列表"
+                        >
+                          @
+                        </button>
+
+                        <div className="flex-1" />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setModelPickerOpen(false);
+                            setAttachDrawerOpen(false);
+                            setAtPickerOpen(false);
+                            setSlashDrawerOpen((v) => !v);
+                          }}
+                          className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full transition"
+                          style={{
+                            backgroundColor: slashDrawerOpen ? palette.accent : palette.well,
+                            color: slashDrawerOpen ? palette.sendInk : palette.bodyMuted,
+                          }}
+                          aria-label="指令菜单"
+                        >
+                          {slashDrawerOpen ? <X size={13} /> : <AlignJustify size={13} />}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={canSend ? handleSendMessage : collapseComposer}
+                          className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full transition"
+                          style={{
+                            backgroundColor: canSend ? palette.sendBg : palette.well,
+                            color: canSend ? palette.sendInk : palette.bodyMuted,
+                            boxShadow: canSend ? `0 4px 12px ${palette.sendShadow}` : "none",
+                          }}
+                          aria-label={canSend ? "发送消息" : "收起输入框"}
+                        >
+                          {canSend ? <ArrowUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
-                <Terminal size={15} style={{ color: palette.bodyMuted }} />
               </div>
             </div>
           )}
 
           {/* Home Indicator */}
-          <div className="flex shrink-0 justify-center pb-2 pt-1">
+          <div className="relative z-20 flex shrink-0 justify-center pb-1.5 pt-1">
             <span className="h-1 w-28 rounded-full bg-current opacity-20" />
           </div>
+
+          {/* Scoped Toaster mounted last inside [data-pocket-root] so notifications sit below Dynamic Island & above all app chrome */}
+          <Toaster id={POCKET_TOASTER_ID} inline position="top-center" visibleToasts={2} />
         </div>
       </div>
     </div>

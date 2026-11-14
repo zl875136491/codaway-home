@@ -60,7 +60,7 @@ describe("codaway-home Pocket theme & AffectUI CSS variables", () => {
         const palette = spec[scheme];
         assert.ok(palette.accent, `Missing accent in ${themeId}.${scheme}`);
         const vars = buildAffectCssVars(themeId, scheme);
-        for (const prefix of ["--ui-agmc-", "--ui-apc-", "--ui-dcc-", "--ui-mdpc-", "--ui-tlc-", "--ui-tsc-"]) {
+        for (const prefix of ["--ui-agmc-", "--ui-apc-", "--ui-dcc-", "--ui-mdpc-", "--ui-tlc-", "--ui-tsc-", "--pk-agmc-", "--pk-apc-", "--pk-dcc-", "--pk-mdpc-", "--pk-tlc-", "--pk-tsc-"]) {
           assert.ok(
             Object.keys(vars).some((k) => k.startsWith(prefix)),
             `Expected CSS vars with prefix ${prefix} for ${themeId}.${scheme}`,
@@ -69,16 +69,43 @@ describe("codaway-home Pocket theme & AffectUI CSS variables", () => {
       }
     }
   });
+
+  test("isolates site-wide light/dark mode from PocketSimulator and positions inline toasts below Dynamic Island", async () => {
+    const html = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
+    assert.ok(!/<html[^>]*data-theme=/.test(html), "<html> must not set data-theme so AffectUI inside PocketSimulator stays isolated");
+    assert.ok(!/<html[^>]*class="[^"]*\bdark\b/.test(html), "<html> must not set .dark class");
+    assert.match(html, /data-site-theme="dark"/);
+
+    const css = fs.readFileSync(path.join(rootDir, "src/styles/main.css"), "utf8");
+    for (const cls of [".ui-agmc", ".ui-apc", ".ui-dcc", ".ui-mdpc", ".ui-tlc", ".ui-tsc"]) {
+      assert.ok(css.includes(`[data-pocket-root] ${cls}`), `Expected [data-pocket-root] binding for ${cls}`);
+    }
+    assert.match(css, /\[data-pocket-root\]\s*\.ui-tsc\[data-inline\]/);
+    assert.match(css, /z-index:\s*60/);
+    assert.match(css, /top:\s*46px/);
+
+    const { App } = await viteServer.ssrLoadModule("/src/App.tsx");
+    const lightSiteHtml = renderToString(React.createElement(App, { initialSiteTheme: "light" }));
+    assert.match(lightSiteHtml, /data-site-theme="light"/);
+    assert.match(lightSiteHtml, /data-pocket-root=""/);
+    assert.match(lightSiteHtml, /data-pocket-scheme="dark"/);
+    assert.match(lightSiteHtml, /data-testid="site-theme-toggle"/);
+    assert.match(lightSiteHtml, /data-testid="pocket-scheme-toggle"/);
+
+    // Ensure outer AppShell does not set `data-theme` above main/PocketSimulator
+    const appShellTag = lightSiteHtml.match(/<div[^>]*data-site-theme="light"[^>]*>/)?.[0] ?? "";
+    assert.ok(!appShellTag.includes("data-theme="), "AppShell wrapper must not declare data-theme");
+  });
 });
 
 describe("codaway-home product data completeness", () => {
-  test("includes all 5 Codaway Worker drivers and core command/architecture/roadmap specs", async () => {
+  test("includes all 7 Codaway drivers (including Antigravity & Cursor) and core command/architecture/roadmap specs", async () => {
     const { DRIVERS, WORKER_COMMANDS, ARCHITECTURE_PILLARS, ROADMAP_SECTIONS } =
       await viteServer.ssrLoadModule("/src/data/codaway.ts");
 
     assert.deepEqual(
       DRIVERS.map((d) => d.id),
-      ["CODEX", "CLAUDE_CODE", "OPENCODE", "DEEPSEEK_TUI", "SHELL"],
+      ["CODEX", "CLAUDE_CODE", "OPENCODE", "DEEPSEEK_TUI", "ANTIGRAVITY", "CURSOR", "SHELL"],
     );
     for (const driver of DRIVERS) {
       assert.ok(driver.displayName.length > 0);
@@ -119,6 +146,9 @@ describe("codaway-home SSR render smoke tests", () => {
     );
     assert.match(homeHtml, /Pocket/);
     assert.match(homeHtml, /Worker/);
+    assert.match(homeHtml, /Antigravity/);
+    assert.match(homeHtml, /Cursor/);
+    assert.match(homeHtml, /接下来\.\.\./);
     assert.match(homeHtml, /ChaCha20-Poly1305/);
 
     const registerHtml = renderToString(
