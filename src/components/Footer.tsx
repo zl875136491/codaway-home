@@ -38,6 +38,12 @@ export function Footer() {
           <a href="/#security" onClick={(e) => go(e, "/#security")} className="transition hover:text-[var(--text-main)]">
             安全架构
           </a>
+          <a href="/terms" onClick={(e) => go(e, "/terms")} className="transition hover:text-[var(--text-main)]">
+            服务协议
+          </a>
+          <a href="/privacy" onClick={(e) => go(e, "/privacy")} className="transition hover:text-[var(--text-main)]">
+            隐私政策
+          </a>
         </div>
       </div>
     </footer>

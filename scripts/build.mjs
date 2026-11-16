@@ -25,6 +25,16 @@ const ROUTE_PAGES = [
     title: "产品路线图与里程碑 — Codaway",
     description: "查看 Codaway Worker、Pipe 中继与 Pocket iOS 已上线能力及未来开发计划。",
   },
+  {
+    file: "terms.html",
+    title: "用户服务协议 — Codaway",
+    description: "Codaway 服务条款、Free / Pro 配额政策与 Apple 应用内订阅说明。",
+  },
+  {
+    file: "privacy.html",
+    title: "隐私政策 — Codaway",
+    description: "Codaway 零知识端到端加密架构与 iOS 相机/麦克风/生物识别权限隐私政策。",
+  },
 ];
 
 function ensureDependencies() {

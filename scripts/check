@@ -11,6 +11,8 @@ const expectedTitles = {
   "index.html": "Codaway — 把本机 AI Coding 工作站装进口袋",
   "register.html": "账号注册与密码重置 — Codaway",
   "roadmap.html": "产品路线图与里程碑 — Codaway",
+  "terms.html": "用户服务协议 — Codaway",
+  "privacy.html": "隐私政策 — Codaway",
 };
 for (const [page, expectedTitle] of Object.entries(expectedTitles)) {
   const html = fs.readFileSync("dist/" + page, "utf8");

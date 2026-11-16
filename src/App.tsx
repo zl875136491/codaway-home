@@ -4,6 +4,8 @@ import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { RoadmapPage } from "./pages/RoadmapPage";
+import { TermsPage } from "./pages/TermsPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
 import { Toaster } from "./components/affectui/ui/toaster-clean";
 import { SiteThemeProvider, useSiteTheme, type SiteTheme } from "./theme/siteTheme";
 
@@ -26,6 +28,10 @@ function AppShell() {
           <RegisterPage />
         ) : route === "/roadmap" ? (
           <RoadmapPage />
+        ) : route === "/terms" ? (
+          <TermsPage />
+        ) : route === "/privacy" ? (
+          <PrivacyPage />
         ) : (
           <HomePage />
         )}

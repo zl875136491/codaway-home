@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type AppRoute = "/" | "/register" | "/roadmap";
+export type AppRoute = "/" | "/register" | "/roadmap" | "/terms" | "/privacy";
 
 export interface RouteMeta {
   path: AppRoute;
@@ -25,6 +25,16 @@ export const ROUTES: Record<AppRoute, RouteMeta> = {
     title: "产品路线图与里程碑 — Codaway",
     description: "查看 Codaway Worker、Pipe 中继与 Pocket iOS 已上线能力及未来开发计划。",
   },
+  "/terms": {
+    path: "/terms",
+    title: "用户服务协议 — Codaway",
+    description: "Codaway 服务条款、Free / Pro 配额政策与 Apple 应用内订阅说明。",
+  },
+  "/privacy": {
+    path: "/privacy",
+    title: "隐私政策 — Codaway",
+    description: "Codaway 零知识端到端加密架构与 iOS 相机/麦克风/生物识别权限隐私政策。",
+  },
 };
 
 export function normalizeRoutePath(rawPathname: string): AppRoute {
@@ -33,6 +43,8 @@ export function normalizeRoutePath(rawPathname: string): AppRoute {
   if (clean === "/index.html" || clean === "") return "/";
   if (clean === "/register" || clean === "/register.html") return "/register";
   if (clean === "/roadmap" || clean === "/roadmap.html") return "/roadmap";
+  if (clean === "/terms" || clean === "/terms.html") return "/terms";
+  if (clean === "/privacy" || clean === "/privacy.html") return "/privacy";
   return "/";
 }
 

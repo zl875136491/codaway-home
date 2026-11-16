@@ -40,9 +40,13 @@ describe("codaway-home routing and metadata", () => {
     assert.equal(normalizeRoutePath("/register?from=home#reset"), "/register");
     assert.equal(normalizeRoutePath("/roadmap"), "/roadmap");
     assert.equal(normalizeRoutePath("/roadmap.html"), "/roadmap");
+    assert.equal(normalizeRoutePath("/terms"), "/terms");
+    assert.equal(normalizeRoutePath("/terms.html"), "/terms");
+    assert.equal(normalizeRoutePath("/privacy"), "/privacy");
+    assert.equal(normalizeRoutePath("/privacy.html"), "/privacy");
     assert.equal(normalizeRoutePath("/non-existent"), "/");
 
-    for (const key of ["/", "/register", "/roadmap"]) {
+    for (const key of ["/", "/register", "/roadmap", "/terms", "/privacy"]) {
       assert.ok(ROUTES[key]?.title.length > 0, `Missing title for ${key}`);
       assert.ok(ROUTES[key]?.description.length > 10, `Missing description for ${key}`);
     }
@@ -135,11 +139,13 @@ describe("codaway-home Auth Portal backend contract", () => {
 });
 
 describe("codaway-home SSR render smoke tests", () => {
-  test("renders HomePage, RegisterPage, and RoadmapPage cleanly", async () => {
+  test("renders HomePage, RegisterPage, RoadmapPage, TermsPage, and PrivacyPage cleanly", async () => {
     const { RouterProvider } = await viteServer.ssrLoadModule("/src/router.tsx");
     const { HomePage } = await viteServer.ssrLoadModule("/src/pages/HomePage.tsx");
     const { RegisterPage } = await viteServer.ssrLoadModule("/src/pages/RegisterPage.tsx");
     const { RoadmapPage } = await viteServer.ssrLoadModule("/src/pages/RoadmapPage.tsx");
+    const { TermsPage } = await viteServer.ssrLoadModule("/src/pages/TermsPage.tsx");
+    const { PrivacyPage } = await viteServer.ssrLoadModule("/src/pages/PrivacyPage.tsx");
 
     const homeHtml = renderToString(
       React.createElement(RouterProvider, null, React.createElement(HomePage)),
@@ -163,5 +169,15 @@ describe("codaway-home SSR render smoke tests", () => {
     );
     assert.match(roadmapHtml, /演进路线图/);
     assert.match(roadmapHtml, /harness-shim/);
+
+    const termsHtml = renderToString(
+      React.createElement(RouterProvider, null, React.createElement(TermsPage)),
+    );
+    assert.match(termsHtml, /Codaway 用户服务协议/);
+
+    const privacyHtml = renderToString(
+      React.createElement(RouterProvider, null, React.createElement(PrivacyPage)),
+    );
+    assert.match(privacyHtml, /Codaway 隐私政策/);
   });
 });
