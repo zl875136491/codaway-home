@@ -135,20 +135,20 @@ export function RegisterPage() {
   };
 
   return (
-    <section className="relative flex-1 py-12 sm:py-16">
+    <section className="relative flex-1 py-8 sm:py-16">
       <GridBackground
         size={44}
         speed={0}
         fade={75}
         color={siteTheme === "dark" ? "rgba(56, 189, 248, 0.06)" : "rgba(2, 132, 199, 0.08)"}
       >
-        <div className="mx-auto max-w-lg px-4 sm:px-6">
-          <div className="codaway-card rounded-3xl p-6 sm:p-8">
-            <div className="mb-6 space-y-2 text-center">
+        <div className="mx-auto max-w-lg px-3.5 sm:px-6">
+          <div className="codaway-card rounded-2xl p-5 sm:rounded-3xl sm:p-8">
+            <div className="mb-5 space-y-2 text-center sm:mb-6">
               <div className="mx-auto inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs text-sky-300 site-light:border-sky-600/25 site-light:text-sky-700">
                 <ShieldCheck size={13} /> Codaway Identity Portal
               </div>
-              <h1 className="text-2xl font-bold text-[var(--text-main)] sm:text-3xl">
+              <h1 className="text-xl font-bold text-[var(--text-main)] sm:text-3xl">
                 {mode === "signup" ? "开通您的 Codaway 账号" : "找回并重置登录密码"}
               </h1>
               <p className="text-xs leading-relaxed text-[var(--text-muted)] sm:text-sm">
@@ -157,11 +157,11 @@ export function RegisterPage() {
             </div>
 
             {/* Mode Switcher */}
-            <div className="mb-6 grid grid-cols-2 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1">
+            <div className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1 sm:mb-6">
               <button
                 type="button"
                 onClick={() => switchMode("signup")}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition sm:text-sm ${
+                className={`inline-flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition sm:py-2 sm:text-sm ${
                   mode === "signup"
                     ? "bg-white text-zinc-950 shadow-sm site-light:bg-slate-900 site-light:text-white"
                     : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
@@ -172,7 +172,7 @@ export function RegisterPage() {
               <button
                 type="button"
                 onClick={() => switchMode("reset")}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition sm:text-sm ${
+                className={`inline-flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition sm:py-2 sm:text-sm ${
                   mode === "reset"
                     ? "bg-white text-zinc-950 shadow-sm site-light:bg-slate-900 site-light:text-white"
                     : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
@@ -224,7 +224,7 @@ export function RegisterPage() {
                   <label htmlFor="auth-email" className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-main)]">
                     <Mail size={13} className="text-[var(--text-muted)]" /> 电子邮箱 Email
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 min-[400px]:flex-row">
                     <input
                       id="auth-email"
                       type="email"
@@ -233,7 +233,7 @@ export function RegisterPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@example.com"
                       autoComplete="email"
-                      className="min-w-0 flex-1 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-code)] px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-[var(--text-sub)] focus:border-sky-400 focus:outline-none site-light:bg-white"
+                      className="min-w-0 flex-1 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-code)] px-3.5 py-2.5 text-base text-[var(--text-main)] placeholder:text-[var(--text-sub)] focus:border-sky-400 focus:outline-none site-light:bg-white sm:text-sm"
                     />
                     <button
                       type="button"
@@ -251,7 +251,7 @@ export function RegisterPage() {
                   <span className="block text-xs font-medium text-[var(--text-main)]">6 位邮箱验证码（支持粘贴自动填充）</span>
                   <div
                     data-theme={siteTheme}
-                    className={`${siteTheme === "dark" ? "dark bg-black/35" : "bg-slate-50"} rounded-2xl border border-[var(--border)] p-3 transition-colors`}
+                    className={`${siteTheme === "dark" ? "dark bg-black/35" : "bg-slate-50"} rounded-2xl border border-[var(--border)] p-2.5 transition-colors sm:p-3`}
                   >
                     <OtpInput
                       length={6}
@@ -286,7 +286,7 @@ export function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="至少 8 个字符"
                     autoComplete="new-password"
-                    className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-code)] px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-[var(--text-sub)] focus:border-sky-400 focus:outline-none site-light:bg-white"
+                    className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-code)] px-3.5 py-2.5 text-base text-[var(--text-main)] placeholder:text-[var(--text-sub)] focus:border-sky-400 focus:outline-none site-light:bg-white sm:text-sm"
                   />
                 </div>
 
@@ -304,7 +304,7 @@ export function RegisterPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="请再次输入以上密码"
                     autoComplete="new-password"
-                    className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-code)] px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-[var(--text-sub)] focus:border-sky-400 focus:outline-none site-light:bg-white"
+                    className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-code)] px-3.5 py-2.5 text-base text-[var(--text-main)] placeholder:text-[var(--text-sub)] focus:border-sky-400 focus:outline-none site-light:bg-white sm:text-sm"
                   />
                 </div>
 

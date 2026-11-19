@@ -344,9 +344,9 @@ export function PocketSimulator() {
       : `radial-gradient(circle at 20% 18%, ${palette.wallpaperGlowA} 0%, transparent 52%), radial-gradient(circle at 82% 76%, ${palette.wallpaperGlowB} 0%, transparent 56%)`;
 
   return (
-    <div id="pocket-studio" className="flex flex-col items-center">
+    <div id="pocket-studio" className="flex w-full min-w-0 scroll-mt-20 flex-col items-center">
       {/* Theme & Scene Quick Controls above phone bezel (styled by siteTheme, completely independent of phone internals) */}
-      <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5 backdrop-blur-md">
+      <div className="no-scrollbar mb-2.5 flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5 backdrop-blur-md sm:mb-3 sm:flex-wrap sm:justify-center sm:gap-1.5">
         {(Object.keys(POCKET_THEMES) as PocketThemeId[]).map((id) => {
           const active = themeId === id;
           return (
@@ -357,7 +357,7 @@ export function PocketSimulator() {
                 setThemeId(id);
                 firePocketToast("info", `切换主题：${POCKET_THEMES[id].name}`, "ThemeManager 实时驱动全部 AffectUI 组件");
               }}
-              className={`rounded-xl px-2.5 py-1 text-xs font-medium transition ${
+              className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-medium transition ${
                 active
                   ? "bg-white text-zinc-950 shadow-sm site-light:bg-slate-900 site-light:text-white"
                   : "text-[var(--text-muted)] hover:bg-[var(--surface-strong)] hover:text-[var(--text-main)]"
@@ -368,13 +368,13 @@ export function PocketSimulator() {
           );
         })}
 
-        <span className="mx-0.5 h-4 w-px bg-[var(--border)]" aria-hidden="true" />
+        <span className="mx-0.5 h-4 w-px shrink-0 bg-[var(--border)]" aria-hidden="true" />
 
         <button
           type="button"
           data-testid="pocket-scheme-toggle"
           onClick={() => setScheme((s) => (s === "dark" ? "light" : "dark"))}
-          className="inline-flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text-main)] transition hover:bg-[var(--surface-strong)]"
+          className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--text-main)] transition hover:bg-[var(--surface-strong)]"
           title="切换 Pocket 模拟器深色 / 浅色外观（仅影响手机画面）"
         >
           {scheme === "dark" ? <Moon size={12} /> : <Sun size={12} />}
@@ -383,7 +383,7 @@ export function PocketSimulator() {
       </div>
 
       {/* Quick Scene & Driver Switcher Pills (external to screen so phone stays 100% authentic iOS) */}
-      <div className="mb-3.5 flex flex-wrap items-center justify-center gap-1.5 text-[11px]">
+      <div className="no-scrollbar mb-3 flex max-w-full items-center gap-1.5 overflow-x-auto px-1 pb-0.5 text-[11px] sm:mb-3.5 sm:flex-wrap sm:justify-center sm:px-0 sm:pb-0">
         {(
           [
             { id: "chat", label: "会话浮层" },
@@ -396,7 +396,7 @@ export function PocketSimulator() {
             key={scene.id}
             type="button"
             onClick={() => setScreenTab(scene.id)}
-            className={`rounded-full border px-2.5 py-0.5 transition ${
+            className={`shrink-0 rounded-full border px-2.5 py-0.5 transition ${
               screenTab === scene.id
                 ? "border-sky-400/50 bg-sky-500/15 font-medium text-sky-300 site-light:border-sky-600/35 site-light:text-sky-700"
                 : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text-main)]"
@@ -406,7 +406,7 @@ export function PocketSimulator() {
           </button>
         ))}
 
-        <span className="mx-0.5 text-[var(--text-sub)]">|</span>
+        <span className="mx-0.5 shrink-0 text-[var(--text-sub)]">|</span>
 
         {POCKET_SESSIONS.slice(0, 3).map((sess) => {
           const active = activeSessionId === sess.id && screenTab === "chat";
@@ -416,7 +416,7 @@ export function PocketSimulator() {
               key={sess.id}
               type="button"
               onClick={() => handleSwitchSession(sess.id)}
-              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 transition ${
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 transition ${
                 active
                   ? "border-emerald-400/50 bg-emerald-500/15 font-medium text-emerald-200 site-light:border-emerald-600/35 site-light:text-emerald-700"
                   : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text-main)]"
@@ -431,15 +431,15 @@ export function PocketSimulator() {
       </div>
 
       {/* Interactive iPhone 16 Pro Shell */}
-      <div className="relative w-full max-w-[390px] rounded-[48px] border-[3px] border-[var(--phone-shell-border,rgba(82,82,91,0.75))] bg-[var(--phone-shell-bg,#0d0f14)] p-2.5 shadow-[var(--phone-shell-shadow,0_32px_90px_-20px_rgba(0,0,0,0.85))]">
+      <div className="relative w-full max-w-[390px] rounded-[38px] border-[2.5px] border-[var(--phone-shell-border,rgba(82,82,91,0.75))] bg-[var(--phone-shell-bg,#0d0f14)] p-2 shadow-[var(--phone-shell-shadow,0_32px_90px_-20px_rgba(0,0,0,0.85))] sm:rounded-[48px] sm:border-[3px] sm:p-2.5">
         <div
           data-pocket-root=""
           data-pocket-scheme={scheme}
           data-theme={scheme}
           className={
             scheme === "dark"
-              ? "dark relative flex h-[716px] flex-col overflow-hidden rounded-[38px]"
-              : "relative flex h-[716px] flex-col overflow-hidden rounded-[38px]"
+              ? "dark relative flex h-[590px] flex-col overflow-hidden rounded-[31px] sm:h-[680px] sm:rounded-[38px] md:h-[716px]"
+              : "relative flex h-[590px] flex-col overflow-hidden rounded-[31px] sm:h-[680px] sm:rounded-[38px] md:h-[716px]"
           }
           style={{
             ...affectCssVars,
@@ -502,17 +502,17 @@ export function PocketSimulator() {
               <button
                 type="button"
                 onClick={() => setScreenTab("sessions")}
-                className="flex max-w-[235px] flex-col items-center rounded-full px-3.5 py-1 shadow-sm backdrop-blur-xl transition hover:brightness-110"
+                className="mx-1.5 flex min-w-0 max-w-[195px] flex-col items-center rounded-full px-3 py-1 shadow-sm backdrop-blur-xl transition hover:brightness-110 sm:max-w-[235px] sm:px-3.5"
                 style={{ backgroundColor: palette.navBg, border: `1px solid ${palette.line}` }}
                 title="点击查看 CodeCube 会话列表"
               >
-                <div className="flex items-center gap-1.5 text-[12.5px] font-semibold" style={{ color: palette.strong }}>
+                <div className="flex max-w-full items-center gap-1.5 text-[12px] font-semibold sm:text-[12.5px]" style={{ color: palette.strong }}>
                   <DriverIcon driver={activeSession.driver} size={13} scheme={scheme} />
                   <span className="truncate">{activeSession.title}</span>
                 </div>
-                <div className="flex items-center gap-1 text-[9.5px]" style={{ color: palette.muted }}>
+                <div className="flex max-w-full items-center gap-1 text-[9.5px]" style={{ color: palette.muted }}>
                   <span
-                    className="h-1.5 w-1.5 rounded-full"
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
                     style={{
                       backgroundColor:
                         activeSession.status === "failed"
@@ -522,7 +522,7 @@ export function PocketSimulator() {
                             : palette.accent,
                     }}
                   />
-                  <span>
+                  <span className="truncate">
                     {activeSession.statusText} · {activeDriverSpec?.shortTitle}
                   </span>
                 </div>
@@ -1096,7 +1096,7 @@ export function PocketSimulator() {
                         }}
                         placeholder="接下来...（输入 @ 选择工作区文件）"
                         style={{ height: Math.max(40, composerBodyHeight - 36), color: palette.strong }}
-                        className="w-full resize-none bg-transparent px-3.5 text-[12px] leading-relaxed outline-none placeholder:opacity-55"
+                        className="w-full resize-none bg-transparent px-3.5 text-[16px] leading-relaxed outline-none placeholder:opacity-55 sm:text-[12px]"
                         autoFocus
                       />
 

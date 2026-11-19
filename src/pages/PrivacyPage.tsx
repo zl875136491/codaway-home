@@ -5,25 +5,25 @@ export function PrivacyPage() {
   const { navigate } = useRouter();
 
   return (
-    <section className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
+    <section className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-16">
       <button
         type="button"
         onClick={() => navigate("/")}
-        className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 text-xs text-[var(--text-sub)] transition hover:text-[var(--text-main)]"
+        className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 text-xs text-[var(--text-sub)] transition hover:text-[var(--text-main)] sm:mb-6"
       >
         <ArrowLeft size={14} /> 返回首页
       </button>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-6 sm:p-10">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 site-light:text-emerald-700">
+      <div className="break-words rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 sm:p-10">
+        <div className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 site-light:text-emerald-700 sm:mb-4">
           <LockKeyhole size={14} /> 隐私政策 · Privacy Policy
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-[var(--text-main)] sm:text-3xl">
+        <h1 className="text-xl font-bold tracking-tight text-[var(--text-main)] sm:text-3xl">
           Codaway 隐私政策
         </h1>
         <p className="mt-2 text-xs text-[var(--text-muted)]">更新日期：2026 年 11 月 16 日 · 零知识盲中继隐私承诺</p>
 
-        <div className="mt-8 space-y-6 text-sm leading-relaxed text-[var(--text-sub)]">
+        <div className="mt-6 space-y-5 text-xs leading-relaxed text-[var(--text-sub)] sm:mt-8 sm:space-y-6 sm:text-sm">
           <div>
             <h2 className="text-base font-semibold text-[var(--text-main)]">1. 零知识架构：我们不读取您的代码与对话</h2>
             <p className="mt-1.5">

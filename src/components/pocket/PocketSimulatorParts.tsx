@@ -673,7 +673,7 @@ export function TerminalCommandCard({
             <Copy size={11} />
           </button>
         </div>
-        <div className="px-3 py-2 font-mono text-[10.5px] leading-snug" style={{ color: palette.ink }}>
+        <div className="break-all px-3 py-2 font-mono text-[10.5px] leading-snug sm:break-normal" style={{ color: palette.ink }}>
           <span style={{ color: palette.accent }}>$</span> {cmd}
         </div>
       </div>

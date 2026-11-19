@@ -179,5 +179,10 @@ describe("codaway-home SSR render smoke tests", () => {
       React.createElement(RouterProvider, null, React.createElement(PrivacyPage)),
     );
     assert.match(privacyHtml, /Codaway 隐私政策/);
+
+    const indexHtml = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
+    assert.match(indexHtml, /viewport-fit=cover/);
+    assert.match(homeHtml, /min-w-0/);
+    assert.match(registerHtml, /text-base/);
   });
 });
