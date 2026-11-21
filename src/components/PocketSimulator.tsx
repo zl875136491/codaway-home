@@ -41,6 +41,7 @@ import {
   POCKET_QUICK_FILES,
   POCKET_SESSIONS,
   SessionListScreen,
+  SimulatorQuotaCard,
   TerminalCommandCard,
   WorkstationListScreen,
   type PocketQuickFile,
@@ -172,6 +173,7 @@ export function PocketSimulator() {
   const [pendingModelId, setPendingModelId] = useState<string | null>(null);
   const [selectedEffort, setSelectedEffort] = useState<ModelEffort>(activeSession.effort);
   const [pendingEffortId, setPendingEffortId] = useState<string | null>(null);
+  const [showQuotaCard, setShowQuotaCard] = useState(false);
 
   const modelTimerRef = useRef<number | null>(null);
   const effortTimerRef = useRef<number | null>(null);
@@ -232,6 +234,7 @@ export function PocketSimulator() {
     setSelectedModel(next.model);
     setSelectedEffort(next.effort);
     setUserMessages([]);
+    setShowQuotaCard(false);
     closeAllTrays();
     setComposerExpanded(false);
     setScreenTab("chat");
@@ -803,6 +806,10 @@ export function PocketSimulator() {
                 )}
 
                 {/* User live sent messages with inline MentionChips */}
+                {showQuotaCard && (
+                  <SimulatorQuotaCard palette={palette} onDismiss={() => setShowQuotaCard(false)} />
+                )}
+
                 {userMessages.map((msg, idx) => (
                   <div key={`${msg.text}-${idx}`} className="flex justify-end">
                     <div
@@ -877,9 +884,28 @@ export function PocketSimulator() {
                       scheme={scheme}
                       onSelectCmd={(cmd, desc) => {
                         setSlashDrawerOpen(false);
-                        setPromptText(`${cmd} `);
-                        setComposerExpanded(true);
-                        firePocketToast("info", `已载入指令 ${cmd}`, desc);
+                        if (cmd === "/quota") {
+                          setShowQuotaCard(true);
+                          firePocketToast("success", "已返回工作站模型额度卡片", "Codex 68% · Cursor 82% · Antigravity 100%");
+                          requestAnimationFrame(() => scrollToChatBottom(true));
+                        } else if (cmd === "/shift") {
+                          const nextOrder: Record<DriverKey, DriverKey> = {
+                            CODEX: "ANTIGRAVITY",
+                            ANTIGRAVITY: "CURSOR",
+                            CURSOR: "CLAUDE_CODE",
+                            CLAUDE_CODE: "CODEX",
+                            OPENCODE: "CODEX",
+                            DEEPSEEK_TUI: "CODEX",
+                            SHELL: "CODEX",
+                          };
+                          const nextDrv = nextOrder[activeSession.driver];
+                          const targetSession = POCKET_SESSIONS.find((s) => s.driver === nextDrv) ?? POCKET_SESSIONS[0];
+                          firePocketToast("info", `已触发 /shift 上下文接力`, `无缝切换至 ${targetSession.driver} 并继承项目规约`);
+                        } else {
+                          setPromptText(`${cmd} `);
+                          setComposerExpanded(true);
+                          firePocketToast("info", `已载入指令 ${cmd}`, desc);
+                        }
                       }}
                       onClose={() => setSlashDrawerOpen(false)}
                     />

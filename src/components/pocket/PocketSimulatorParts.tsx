@@ -387,10 +387,10 @@ export function FloatingCommandSheet({
 }) {
   const driverSpec = DRIVERS.find((d) => d.id === driver);
   const commands = [
-    { icon: Target, title: "会话目标", cmd: "/goal", desc: "开启 Goal Mode 持续执行目标" },
+    { icon: Target, title: "切换驱动", cmd: "/shift", desc: "同会话无缝热切换并继承 Shift 项目上下文" },
+    { icon: Cpu, title: "额度查询", cmd: "/quota", desc: "采集 Codex / Cursor / Antigravity 实时模型额度" },
     { icon: Compass, title: "运行模式", cmd: "/mode", desc: driver === "ANTIGRAVITY" ? "切换 default / accept-edits / auto / plan" : "切换工作流协作模式" },
     { icon: Sparkles, title: "思考深度", cmd: "/thinking", desc: "热更新 reasoning effort 档位" },
-    { icon: Cpu, title: "会话状态", cmd: "/status", desc: "实时检查工作区与模型配额" },
     { icon: Square, title: "中断执行", cmd: "/stop", desc: "安全停止当前运行中的任务" },
     { icon: RotateCcw, title: "新开会话", cmd: "/new", desc: "重置上下文并建立新会话" },
   ];
@@ -809,6 +809,63 @@ export function GitInspectorView({ palette }: { palette: PocketThemePalette }) {
           </div>
         </div>
         <Terminal size={15} style={{ color: palette.bodyMuted }} />
+      </div>
+    </div>
+  );
+}
+
+export function SimulatorQuotaCard({ palette, onDismiss }: { palette: PocketThemePalette; onDismiss?: () => void }) {
+  const pools = [
+    { name: "Codex · 5 小时窗口", used: 32, badge: "5h", reset: "2小时14分后重置", warn: false },
+    { name: "Cursor · Pro 月度额度", used: 18, badge: "月", reset: "10天后重置", warn: false },
+    { name: "Antigravity · Claude/GPT", used: 84, badge: "周", reset: "1小时30分后重置", warn: true },
+  ];
+
+  return (
+    <div
+      className="rounded-[18px] p-3 text-[11px]"
+      style={{
+        backgroundColor: palette.card,
+        border: `1px solid ${palette.line}`,
+      }}
+    >
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 font-semibold" style={{ color: palette.strong }}>
+          <Cpu size={13} style={{ color: palette.accent }} />
+          <span>Agent 模型额度快照 · UsageMeter</span>
+        </div>
+        {onDismiss && (
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="flex h-5 w-5 items-center justify-center rounded-full"
+            style={{ backgroundColor: palette.well, color: palette.muted }}
+            aria-label="收起额度卡片"
+          >
+            <X size={10} />
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        {pools.map((p) => {
+          const barColor = p.warn ? "#e8b000" : palette.accent;
+          return (
+            <div key={p.name} className="space-y-1">
+              <div className="flex items-center justify-between gap-2 text-[10.5px]">
+                <span className="truncate font-medium" style={{ color: palette.ink }}>
+                  {p.name}
+                </span>
+                <span className="shrink-0 font-mono font-semibold" style={{ color: p.warn ? "#e8b000" : palette.strong }}>
+                  已用 {p.used}% · {p.reset}
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: palette.well }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${p.used}%`, backgroundColor: barColor }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

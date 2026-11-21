@@ -14,7 +14,13 @@ import {
   Terminal,
 } from "lucide-react";
 import { useRouter } from "../router";
-import { ARCHITECTURE_PILLARS, DRIVERS, WORKER_COMMANDS, type DriverKey } from "../data/codaway";
+import {
+  ARCHITECTURE_PILLARS,
+  DRIVERS,
+  STEWARD_SHOWCASE_FEATURES,
+  WORKER_COMMANDS,
+  type DriverKey,
+} from "../data/codaway";
 import { useSiteTheme } from "../theme/siteTheme";
 import { DriverIcon } from "../components/DriverIcon";
 import { PocketSimulator } from "../components/PocketSimulator";
@@ -28,6 +34,65 @@ import { IntegrationFlow, type IntegrationItem } from "../components/affectui/il
 import { ModelWheel } from "../components/affectui/illustrations/model-wheel";
 
 const QUICKSTART_CMD = "codaway login && codaway workspace add . && codaway start --pair";
+
+type QuotaPeriodKey = "all" | "5h" | "week" | "month";
+
+const QUOTA_DEMO_POOLS: {
+  provider: string;
+  driver: DriverKey;
+  plan: string;
+  pool: string;
+  period: Exclude<QuotaPeriodKey, "all">;
+  periodLabel: string;
+  used: number;
+  reset: string;
+  method: string;
+}[] = [
+  {
+    provider: "Codex",
+    driver: "CODEX",
+    plan: "Pro",
+    pool: "Codex 5h · 主窗口",
+    period: "5h",
+    periodLabel: "5 小时",
+    used: 32.5,
+    reset: "2小时14分后重置",
+    method: "codex app-server JSON-RPC",
+  },
+  {
+    provider: "Codex",
+    driver: "CODEX",
+    plan: "Pro",
+    pool: "Codex 周限额",
+    period: "week",
+    periodLabel: "本周",
+    used: 64.0,
+    reset: "5天后重置",
+    method: "account/rateLimits/read",
+  },
+  {
+    provider: "Cursor",
+    driver: "CURSOR",
+    plan: "Pro",
+    pool: "Cursor Models",
+    period: "month",
+    periodLabel: "本月",
+    used: 18.0,
+    reset: "10天后重置",
+    method: "Keychain JWT + Connect RPC",
+  },
+  {
+    provider: "Antigravity",
+    driver: "ANTIGRAVITY",
+    plan: "Max",
+    pool: "Claude & GPT Models",
+    period: "week",
+    periodLabel: "本周",
+    used: 84.5,
+    reset: "1小时30分后重置",
+    method: "agy /usage PTY Scraping",
+  },
+];
 
 function buildIntegrationItems(scheme: "dark" | "light"): IntegrationItem[] {
   return [
@@ -87,7 +152,14 @@ export function HomePage() {
   const { siteTheme } = useSiteTheme();
   const [activeDriver, setActiveDriver] = useState<DriverKey>("CODEX");
   const [activeCmdId, setActiveCmdId] = useState<string>(WORKER_COMMANDS[0].id);
+  const [quotaPeriod, setQuotaPeriod] = useState<QuotaPeriodKey>("all");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const visibleQuotaPools = useMemo(() => {
+    if (quotaPeriod === "all") return QUOTA_DEMO_POOLS;
+    const matched = QUOTA_DEMO_POOLS.filter((p) => p.period === quotaPeriod);
+    return matched.length > 0 ? matched : QUOTA_DEMO_POOLS;
+  }, [quotaPeriod]);
 
   const selectedDriver = DRIVERS.find((d) => d.id === activeDriver) ?? DRIVERS[0];
   const selectedWorkerCmd = WORKER_COMMANDS.find((c) => c.id === activeCmdId) ?? WORKER_COMMANDS[0];
@@ -119,7 +191,7 @@ export function HomePage() {
             <div className="min-w-0 space-y-5 sm:space-y-7">
               <div className="inline-flex max-w-full items-center gap-2 rounded-2xl border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-[11px] font-medium leading-snug text-sky-300 site-light:border-sky-600/25 site-light:text-sky-700 sm:rounded-full sm:px-3.5 sm:text-xs">
                 <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-sky-400 site-light:bg-sky-600" />
-                <span>CPS-v1.3 · AffectUI Native · 支持 Antigravity ACP、Cursor 生态与 harness-shim</span>
+                <span>CPS-v1.3 · Shift 项目管家 · /shift 跨驱动热接力 · 多 Agent /quota 额度监控</span>
               </div>
 
               <div className="space-y-3.5 sm:space-y-4">
@@ -131,8 +203,8 @@ export function HomePage() {
                   <code className="rounded bg-[var(--surface-strong)] px-1.5 py-0.5 font-mono text-xs text-[var(--text-main)] sm:text-sm">
                     codaway start
                   </code>{" "}
-                  反向建链；手机端 <strong className="font-semibold text-[var(--text-main)]">Pocket</strong>{" "}
-                  采用全新 AffectUI Clean 组件与三套实时主题，随时随地完成模型切换、任务进度追踪与 Face ID 危险指令审批。
+                  反向建链并自动沉淀 Shift 项目管家上下文；手机端 <strong className="font-semibold text-[var(--text-main)]">Pocket</strong>{" "}
+                  配备原生四合一底栏、跨 Agent <code className="font-mono text-[var(--text-main)]">/shift</code> 热切换、<code className="font-mono text-[var(--text-main)]">/quota</code> 实时额度卡片与按工作站独立隔离的 Face ID 审批策略。
                 </p>
               </div>
 
@@ -193,9 +265,9 @@ export function HomePage() {
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 sm:px-4 sm:py-3">
                   <div className="text-xl font-bold text-sky-400 site-light:text-sky-600 sm:text-2xl">
-                    <NumberTicker value={32} />
+                    <NumberTicker value={3} />
                   </div>
-                  <div className="text-[11px] text-[var(--text-muted)] sm:text-xs">帧离线缓冲队列</div>
+                  <div className="text-[11px] text-[var(--text-muted)] sm:text-xs">Agent 实时额度探针 (Codex·Cursor·Agy)</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 sm:px-4 sm:py-3">
                   <div className="text-xl font-bold text-[var(--text-main)] sm:text-2xl">
@@ -234,23 +306,23 @@ export function HomePage() {
           {[
             {
               icon: <Sparkles size={18} className="text-sky-400 site-light:text-sky-600" />,
-              title: "悬浮“接下来...”胶囊 + 居中回底",
-              desc: "取消底部遮罩，输入条以紧凑毛玻璃直接悬浮于消息流上方；向上翻阅历史时正上方居中浮出圆形回底按钮，一键回到最新消息。",
+              title: "悬浮“接下来...”胶囊 + 原生四合一底栏",
+              desc: "会话内采用紧凑悬浮输入条与居中回底按钮；工作站控制台采用 iOS 原生 TabView（会话 / 项目 / 设置 / 搜索）合一底栏，点搜索即刻唤起当前页蒙版与输入框。",
             },
             {
               icon: <Layers size={18} className="text-emerald-400 site-light:text-emerald-600" />,
-              title: "@ 全高文件拾取与行内 × 芯片",
-              desc: "输入 @ 即刻展开全高文件列表并支持下滑无条目标注缩回；选中后以内嵌着色胶囊展示，右侧附带小 × 按钮一键移除无卡顿。",
+              title: "Shift 项目管家 + @ 全高文件芯片",
+              desc: "会话统一从项目详情发起，单页纵览仓库、子项目防冲突 Git 状态、规约凭据与末尾归因日志；会话内输入 @ 即嵌可移除文件引用胶囊。",
             },
             {
               icon: <Cpu size={18} className="text-violet-400 site-light:text-violet-600" />,
-              title: "三列指令宫格与 /photo · /file",
-              desc: "点 ≡ 展开 3 列指令矩阵（/goal、/mode、/thinking、/stop）；点 + 发起 /photo 截图或 /file 本地文件的 R2 端到端加密直传。",
+              title: "三列指令宫格 · /shift 与 /quota",
+              desc: "点 ≡ 展开指令矩阵，点击 /shift 带图标热切换驱动并继承上下文，点击 /quota 即刻返回 AffectUI SwiftUI 化多引擎实时模型额度卡片。",
             },
             {
               icon: <ShieldCheck size={18} className="text-amber-400 site-light:text-amber-600" />,
-              title: "统一品牌图标与双轴 ModelPicker",
-              desc: "采用统一 brand_icons 渲染会话右下角角标、折叠 AgentMonitor 与 Face ID 审批；左下角内联配置模型与多档思考程度独立锁定。",
+              title: "按工作站隔离的 iOS 原生分层设置",
+              desc: "采用标准 iOS 分格卡片式二级设置（无主题干扰）：模型额度、自动下载阈值及 Face ID 审批策略均按既定工作站独立隔离生效。",
             },
           ].map((card) => (
             <div key={card.title} className="codaway-card rounded-2xl p-4 transition sm:p-5">
@@ -261,6 +333,146 @@ export function HomePage() {
               <p className="text-xs leading-relaxed text-[var(--text-muted)] sm:text-sm">{card.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* SECTION: SHIFT PROJECT STEWARD + /shift + /quota AFFECTUI USAGEMETER */}
+      <section id="steward-quota" className="scroll-mt-16 border-t border-[var(--border)] py-14 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-8 max-w-2xl space-y-2.5 sm:mb-10 sm:space-y-3">
+            <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-violet-400 site-light:text-violet-600">
+              <Cpu size={14} /> Shift Steward · Multi-Agent /quota
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-main)] sm:text-4xl">
+              从松散目录跃迁为项目管家，实时掌控跨 Agent 模型额度
+            </h2>
+            <p className="text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
+              不仅是远程终端：<strong className="font-semibold text-[var(--text-main)]">Shift</strong> 为每个多仓库项目维护工程红线、ADR 决策、AES 加密凭据、子项目防重复 Git 隔离与协作归因日志；并结合 AffectUI <code className="rounded bg-[var(--surface-strong)] px-1 font-mono text-[var(--text-main)]">UsageMeter</code> 在会话与工作站设置中实时可视化 Codex、Cursor 与 Antigravity 剩余配额。
+            </p>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+            {/* Left: 3 Steward Architecture Cards */}
+            <div className="grid gap-4">
+              {STEWARD_SHOWCASE_FEATURES.map((feat) => (
+                <div key={feat.title} className="codaway-card rounded-2xl p-4 sm:p-5">
+                  <div className="mb-2 inline-block rounded-full border border-sky-400/25 bg-sky-500/10 px-2.5 py-0.5 font-mono text-[10.5px] text-sky-300 site-light:border-sky-600/25 site-light:text-sky-700">
+                    {feat.tag}
+                  </div>
+                  <h3 className="mb-1.5 text-base font-bold text-[var(--text-main)]">{feat.title}</h3>
+                  <p className="mb-3 text-xs leading-relaxed text-[var(--text-muted)] sm:text-sm">{feat.desc}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {feat.highlights.map((item) => (
+                      <span
+                        key={item}
+                        className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11px] text-[var(--text-main)]"
+                      >
+                        <CheckCircle2 size={12} className="shrink-0 text-emerald-400 site-light:text-emerald-600" />
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right: Interactive AffectUI Clean UsageMeter Quota Showcase */}
+            <div className="codaway-card flex flex-col justify-between rounded-2xl p-4 sm:p-6">
+              <div>
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] pb-4">
+                  <div>
+                    <div className="text-sm font-bold text-[var(--text-main)] sm:text-base">
+                      Agent 模型额度卡片 · UsageMeter Preview
+                    </div>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      设置页「模型额度」及会话 /quota 卡片实时渲染同款仪表盘
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1 text-xs">
+                    {(
+                      [
+                        { id: "all", label: "全部" },
+                        { id: "5h", label: "5 小时" },
+                        { id: "week", label: "本周" },
+                        { id: "month", label: "本月" },
+                      ] as { id: QuotaPeriodKey; label: string }[]
+                    ).map((tab) => {
+                      const active = quotaPeriod === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setQuotaPeriod(tab.id)}
+                          className={`rounded-md px-2.5 py-1 font-medium transition ${
+                            active
+                              ? "bg-white text-zinc-950 shadow-sm site-light:bg-slate-900 site-light:text-white"
+                              : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3.5">
+                  {visibleQuotaPools.map((item) => {
+                    const isWarn = item.used >= 80;
+                    return (
+                      <div
+                        key={item.pool}
+                        className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 sm:p-3.5"
+                      >
+                        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <DriverIcon driver={item.driver} size={15} scheme={siteTheme} />
+                            <span className="text-xs font-semibold text-[var(--text-main)] sm:text-sm">
+                              {item.pool}
+                            </span>
+                            <span className="rounded bg-[var(--surface-strong)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
+                              {item.periodLabel}
+                            </span>
+                          </div>
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-xs font-semibold ${
+                              isWarn
+                                ? "bg-amber-500/15 text-amber-400 site-light:text-amber-700"
+                                : "bg-[var(--surface-strong)] text-[var(--text-main)]"
+                            }`}
+                          >
+                            {isWarn && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />}
+                            已用 {item.used}%
+                          </span>
+                        </div>
+
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/15 site-light:bg-slate-200">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              isWarn ? "bg-amber-400" : "bg-sky-500"
+                            }`}
+                            style={{ width: `${Math.min(100, item.used)}%` }}
+                          />
+                        </div>
+
+                        <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-[var(--text-muted)]">
+                          <span className="font-mono">{item.method}</span>
+                          <span>
+                            剩余 {(100 - item.used).toFixed(1)}% · {item.reset}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3 text-[11px] text-[var(--text-muted)]">
+                <span>最后更新：实时探针（支持手动刷新与缓存持久化）</span>
+                <span className="font-mono text-sky-400 site-light:text-sky-600">AGENT_QUOTA_REQ → RESP</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -119,11 +119,14 @@ describe("codaway-home product data completeness", () => {
 
     assert.ok(WORKER_COMMANDS.some((c) => c.id === "doctor"));
     assert.ok(WORKER_COMMANDS.some((c) => c.id === "start-pair"));
+    assert.ok(WORKER_COMMANDS.some((c) => c.id === "shift-quota"));
     assert.ok(WORKER_COMMANDS.some((c) => c.id === "service"));
     assert.ok(ARCHITECTURE_PILLARS.length >= 4);
     assert.ok(ROADMAP_SECTIONS.some((s) => s.status === "shipped"));
     assert.ok(ROADMAP_SECTIONS.some((s) => s.status === "in-progress"));
     assert.ok(ROADMAP_SECTIONS.some((s) => s.status === "planned"));
+    assert.ok(ROADMAP_SECTIONS.some((s) => s.items.some((i) => i.name.includes("/quota"))));
+    assert.ok(ROADMAP_SECTIONS.some((s) => s.items.some((i) => i.name.includes("/shift"))));
   });
 });
 
@@ -156,6 +159,9 @@ describe("codaway-home SSR render smoke tests", () => {
     assert.match(homeHtml, /Cursor/);
     assert.match(homeHtml, /接下来\.\.\./);
     assert.match(homeHtml, /ChaCha20-Poly1305/);
+    assert.match(homeHtml, /Shift/);
+    assert.match(homeHtml, /UsageMeter/);
+    assert.match(homeHtml, /AGENT_QUOTA_REQ/);
 
     const registerHtml = renderToString(
       React.createElement(RouterProvider, null, React.createElement(RegisterPage)),
